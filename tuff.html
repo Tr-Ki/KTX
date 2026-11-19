@@ -880,7 +880,9 @@
     .shop-error { background: rgba(239, 68, 68, .14); border: 1px solid rgba(239, 68, 68, .4); color: #fca5a5; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
     .owner-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
     .owner-tag { font-size: 11px; color: var(--text-muted); }
-    .auth-status { min-height: 44px; display:flex; align-items:center; }
+    .auth-status { min-height: 44px; max-width: 220px; display:flex; align-items:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .auth-redirect-note { padding: 9px 10px; border-radius: 8px; background: rgba(56, 189, 248, .1); color: #bae6fd !important; }
+    .auth-success { padding: 9px 10px; border-radius: 8px; background: rgba(34, 197, 94, .12); color: #bbf7d0; font-size: 13px; line-height: 1.45; }
     .menu-photo-input { min-height: auto !important; padding: 6px 0 !important; border: none !important; background: transparent !important; }
     .menu-photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .menu-photo-grid img { width: 100%; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
@@ -936,7 +938,7 @@
           <button id="btn-toggle-detail" class="btn btn-toggle active" type="button">Chi tiết cao: BẬT</button>
           <button id="btn-gate-view" class="btn" type="button">Xem Cổng KTX</button>
           <button id="btn-reset-camera" class="btn btn-primary" type="button">Reset góc nhìn</button>
-          <button id="btn-auth" class="btn auth-status" type="button">Đăng nhập chủ quán</button>
+          <button id="btn-auth" class="btn auth-status" type="button">👤 Đăng nhập</button>
         </div>
       </div>
 
@@ -1143,164 +1145,178 @@
     const ratingService = (() => {
       const STORAGE_KEY_RATINGS = 'ktx_khub_ratings_v1';
       const STORAGE_KEY_USER = 'ktx_khub_user_id_v1';
-      let memoryRatings = null;
-      let memoryUserId = null;
+      const PAGE_SIZE = 1000;
+      let memoryRatings = {};
+      let currentUser = null;
+      let loaded = false;
+      let loadError = null;
 
-      const DEMO_SEED_RATINGS = {
-        "ct-b1-01": [
-          { userId: "demo_1", stars: 5, comment: "Sườn ướp ngon, cơm dẻo vừa miệng.", updatedAt: Date.now() - 86400000 * 2 },
-          { userId: "demo_2", stars: 4, comment: "Giá sinh viên ổn áp, trưa hơi đông.", updatedAt: Date.now() - 86400000 }
-        ],
-        "ct-b4-01": [
-          { userId: "demo_3", stars: 4, comment: "Phần ăn đầy đặn, có canh chua.", updatedAt: Date.now() - 72000000 }
-        ],
-        "ts-e2-01": [
-          { userId: "demo_4", stars: 5, comment: "Trà sữa ít ngọt uống rất thơm!", updatedAt: Date.now() - 40000000 },
-          { userId: "demo_5", stars: 4, comment: "Trân châu mềm, phục vụ nhanh.", updatedAt: Date.now() - 12000000 }
-        ],
-        "bb-c5-01": [
-          { userId: "demo_6", stars: 5, comment: "Tô to, nước dùng đậm vị Huế.", updatedAt: Date.now() - 50000000 }
-        ],
-        "mc-d5-01": [
-          { userId: "demo_7", stars: 4, comment: "Cấp độ 2 vừa ăn, topping nhiều.", updatedAt: Date.now() - 36000000 }
-        ],
-        "av-e2-01": [
-          { userId: "demo_8", stars: 5, comment: "Bánh tráng dẻo ngon, tối hay tụ tập.", updatedAt: Date.now() - 18000000 }
-        ],
-        "ts-b3-01": [
-          { userId: "demo_9", stars: 3, comment: "Hơi ngọt, chờ lâu giờ cao điểm.", updatedAt: Date.now() - 30000000 },
-          { userId: "demo_10", stars: 1, comment: "Hết trân châu lúc 8 giờ tối.", updatedAt: Date.now() - 9000000 }
-        ],
-        "bb-ba2-01": [
-          { userId: "demo_11", stars: 2, comment: "Nước lèo nhạt, bán hơi sớm hết.", updatedAt: Date.now() - 20000000 }
-        ]
-      };
-
-      function sanitizeAll(obj) {
-        const out = {};
-        if (!obj || typeof obj !== 'object') return out;
-        for (const [k, list] of Object.entries(obj)) {
-          if (!Array.isArray(list)) continue;
-          out[k] = list
-            .filter((r) => r && typeof r.userId === 'string' && Number.isInteger(Number(r.stars)) && r.stars >= 1 && r.stars <= 5)
-            .map((r) => ({
-              userId: r.userId,
-              stars: Number(r.stars),
-              comment: typeof r.comment === 'string' ? r.comment.slice(0, 200) : '',
-              updatedAt: Number(r.updatedAt) || 0
-            }));
-        }
-        return out;
+      function setCurrentUser(user) {
+        currentUser = user;
       }
 
-      function safeLoadAll() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY_RATINGS);
-          if (raw) {
-            memoryRatings = sanitizeAll(JSON.parse(raw));
-            return memoryRatings;
-          }
-          if (!memoryRatings) {
-            memoryRatings = sanitizeAll(DEMO_SEED_RATINGS);
-            localStorage.setItem(STORAGE_KEY_RATINGS, JSON.stringify(memoryRatings));
-          }
-          return memoryRatings;
-        } catch (err) {
-          if (!memoryRatings) memoryRatings = sanitizeAll(DEMO_SEED_RATINGS);
-          return memoryRatings;
-        }
+      function getCurrentUserId() {
+        return currentUser?.id || null;
       }
 
-      function safeSaveAll(allRatings, allowMemoryFallback = true) {
-        try {
-          localStorage.setItem(STORAGE_KEY_RATINGS, JSON.stringify(allRatings));
-          memoryRatings = allRatings;
-          return true;
-        } catch (err) {
-          if (allowMemoryFallback) memoryRatings = allRatings;
-          return false;
-        }
+      function toRating(row) {
+        return {
+          userId: row.user_id,
+          stars: Number(row.stars),
+          comment: typeof row.comment === 'string' ? row.comment : '',
+          updatedAt: new Date(row.updated_at).getTime() || 0
+        };
       }
 
-      function getUserId() {
-        if (memoryUserId) return memoryUserId;
-        try {
-          let uid = localStorage.getItem(STORAGE_KEY_USER);
-          if (!uid) {
-            uid = 'usr_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-            localStorage.setItem(STORAGE_KEY_USER, uid);
+      function addToMemory(spotId, rating) {
+        const list = Array.isArray(memoryRatings[spotId]) ? memoryRatings[spotId] : [];
+        const next = list.filter((item) => item.userId !== rating.userId);
+        next.push(rating);
+        memoryRatings[spotId] = next.sort((a, b) => b.updatedAt - a.updatedAt);
+      }
+
+      async function loadAll() {
+        const rows = [];
+        let offset = 0;
+        while (true) {
+          const { data, error } = await supabase
+            .from('ratings')
+            .select('spot_id,user_id,stars,comment,updated_at')
+            .order('updated_at', { ascending: false })
+            .range(offset, offset + PAGE_SIZE - 1);
+          if (error) {
+            loaded = false;
+            loadError = error.message;
+            return { success: false, error: error.message };
           }
-          memoryUserId = uid;
-          return uid;
-        } catch (err) {
-          memoryUserId = 'usr_temp_' + Math.random().toString(36).slice(2, 8);
-          return memoryUserId;
+          const pageRows = data || [];
+          rows.push(...pageRows);
+          if (pageRows.length < PAGE_SIZE) break;
+          offset += PAGE_SIZE;
         }
+
+        memoryRatings = {};
+        rows.forEach((row) => {
+          if (!memoryRatings[row.spot_id]) memoryRatings[row.spot_id] = [];
+          memoryRatings[row.spot_id].push(toRating(row));
+        });
+        loaded = true;
+        loadError = null;
+        return { success: true };
+      }
+
+      async function migrateLegacyRatings() {
+        if (!currentUser) return { success: true };
+        let raw;
+        let legacyUserId;
+        try {
+          raw = localStorage.getItem(STORAGE_KEY_RATINGS);
+          legacyUserId = localStorage.getItem(STORAGE_KEY_USER);
+        } catch (error) {
+          return { success: false, error: 'Không thể đọc đánh giá cũ trên thiết bị này.' };
+        }
+        if (!raw) return { success: true };
+        if (!legacyUserId) {
+          return { success: false, error: 'Thiếu mã người dùng cũ; dữ liệu đánh giá cục bộ được giữ nguyên.' };
+        }
+
+        let legacyRatings;
+        try {
+          legacyRatings = JSON.parse(raw);
+        } catch (error) {
+          return { success: false, error: 'Dữ liệu đánh giá cũ không hợp lệ và được giữ nguyên.' };
+        }
+        if (!legacyRatings || typeof legacyRatings !== 'object' || Array.isArray(legacyRatings)) {
+          return { success: false, error: 'Dữ liệu đánh giá cũ không hợp lệ và được giữ nguyên.' };
+        }
+
+        const rows = [];
+        Object.entries(legacyRatings).forEach(([spotId, list]) => {
+          if (!Array.isArray(list)) return;
+          const oldRating = list.find((rating) => rating && rating.userId === legacyUserId);
+          if (!oldRating) return;
+          const stars = Number(oldRating.stars);
+          if (!Number.isInteger(stars) || stars < 1 || stars > 5) return;
+          rows.push({
+            spot_id: spotId,
+            user_id: currentUser.id,
+            stars,
+            comment: typeof oldRating.comment === 'string' ? oldRating.comment.slice(0, 200) : '',
+            updated_at: new Date(Number(oldRating.updatedAt) || Date.now()).toISOString()
+          });
+        });
+
+        if (rows.length) {
+          const { error } = await supabase.from('ratings').upsert(rows, { onConflict: 'spot_id,user_id' });
+          if (error) return { success: false, error: `Không thể chuyển đánh giá cũ: ${error.message}` };
+        }
+
+        try {
+          localStorage.removeItem(STORAGE_KEY_RATINGS);
+          localStorage.removeItem(STORAGE_KEY_USER);
+        } catch (error) {
+          return { success: false, error: 'Đã chuyển đánh giá nhưng không thể dọn dữ liệu cũ khỏi thiết bị.' };
+        }
+        return { success: true };
       }
 
       function getRatings(spotId) {
-        const all = safeLoadAll();
-        const list = Array.isArray(all[spotId]) ? all[spotId] : [];
-        return [...list].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        return Array.isArray(memoryRatings[spotId]) ? [...memoryRatings[spotId]] : [];
       }
 
       function getUserRating(spotId) {
-        const uid = getUserId();
+        const uid = getCurrentUserId();
+        if (!uid) return null;
         return getRatings(spotId).find((r) => r.userId === uid) || null;
       }
 
-      function submitRating(spotId, stars, comment = '') {
+      async function submitRating(spotId, stars, comment = '') {
         const cleanStars = Math.round(Number(stars));
         if (!Number.isFinite(cleanStars) || cleanStars < 1 || cleanStars > 5) {
-          throw new Error('Số sao phải nằm trong khoảng 1 đến 5.');
+          return { success: false, error: 'Số sao phải nằm trong khoảng 1 đến 5.' };
         }
-
+        if (!currentUser) return { success: false, error: 'Đăng nhập để gửi đánh giá.' };
         const cleanComment = String(comment || '').trim().slice(0, 200);
-        const uid = getUserId();
-        const all = safeLoadAll();
-        const list = Array.isArray(all[spotId]) ? [...all[spotId]] : [];
-
-        const existingIdx = list.findIndex((r) => r.userId === uid);
-        const record = { userId: uid, stars: cleanStars, comment: cleanComment, updatedAt: Date.now() };
-        if (existingIdx >= 0) list[existingIdx] = record;
-        else list.push(record);
-
-        all[spotId] = list;
-        safeSaveAll(all, true);
-        return getRatings(spotId);
+        const { data, error } = await supabase.from('ratings').upsert({
+          spot_id: spotId,
+          user_id: currentUser.id,
+          stars: cleanStars,
+          comment: cleanComment,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'spot_id,user_id' })
+          .select('spot_id,user_id,stars,comment,updated_at')
+          .single();
+        if (error) return { success: false, error: error.message };
+        addToMemory(spotId, toRating(data));
+        return { success: true, ratings: getRatings(spotId) };
       }
 
-      function deleteRating(spotId) {
-        try {
-          const uid = getUserId();
-          const all = safeLoadAll();
-          const list = Array.isArray(all[spotId]) ? all[spotId] : [];
-          const targetIdx = list.findIndex((r) => r.userId === uid);
-          if (targetIdx < 0) return { success: false, removed: null };
-
-          const removed = { ...list[targetIdx] };
-          const nextAll = { ...all, [spotId]: list.filter((_, idx) => idx !== targetIdx) };
-          const saved = safeSaveAll(nextAll, false);
-          if (!saved) return { success: false, removed: null, error: 'Không thể xóa lúc này' };
-          return { success: true, removed };
-        } catch (err) {
-          return { success: false, removed: null, error: 'Không thể xóa lúc này' };
-        }
+      async function deleteRating(spotId) {
+        const rating = getUserRating(spotId);
+        if (!currentUser || !rating) return { success: false, error: 'Không tìm thấy đánh giá để xóa.' };
+        const { error } = await supabase.from('ratings').delete()
+          .eq('spot_id', spotId).eq('user_id', currentUser.id);
+        if (error) return { success: false, error: error.message };
+        memoryRatings[spotId] = getRatings(spotId).filter((item) => item.userId !== currentUser.id);
+        return { success: true, removed: rating };
       }
 
-      function restoreRating(spotId, rating) {
-        if (!rating || rating.userId !== getUserId()) return { success: false };
-        try {
-          const all = safeLoadAll();
-          const list = Array.isArray(all[spotId]) ? [...all[spotId]] : [];
-          const existingIdx = list.findIndex((r) => r.userId === rating.userId);
-          if (existingIdx >= 0) list[existingIdx] = { ...rating };
-          else list.push({ ...rating });
-          safeSaveAll({ ...all, [spotId]: list }, true);
-          return { success: true };
-        } catch (err) {
-          return { success: false };
+      async function restoreRating(spotId, rating) {
+        if (!rating || rating.userId !== getCurrentUserId()) {
+          return { success: false, error: 'Bạn cần đăng nhập lại để khôi phục đánh giá.' };
         }
+        const { data, error } = await supabase.from('ratings').upsert({
+          spot_id: spotId,
+          user_id: currentUser.id,
+          stars: rating.stars,
+          comment: rating.comment,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'spot_id,user_id' })
+          .select('spot_id,user_id,stars,comment,updated_at')
+          .single();
+        if (error) return { success: false, error: error.message };
+        addToMemory(spotId, toRating(data));
+        return { success: true };
       }
 
       function getRatingsByStar(spotId, star = 'all', page = 1, pageSize = 5) {
@@ -1334,7 +1350,8 @@
       }
 
       return {
-        getUserId, getRatings, getUserRating, submitRating,
+        setCurrentUser, getCurrentUserId, isLoaded: () => loaded, getLoadError: () => loadError,
+        loadAll, migrateLegacyRatings, getRatings, getUserRating, submitRating,
         deleteRating, restoreRating, getRatingsByStar, getDistribution, getAverage
       };
     })();
@@ -1344,6 +1361,7 @@
 
     const SUPABASE_URL = 'https://fbwvypwbrpgpgcgryjbs.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UUaPSefP6uWuvevBz_xcGw_HcOVN9rS';
+    const AUTH_REDIRECT_URL = 'https://tr-ki.github.io/KTX/';
     const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     const MENU_BUCKET = 'ktx-menu-photos';
     const MAX_MENU_PHOTOS = 5;
@@ -1357,11 +1375,29 @@
       let remoteShops = [];
       let remotePhotos = [];
       let currentUser = null;
+      let localShopMigration = null;
 
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
+        ratingService.setCurrentUser(currentUser);
         updateAuthButton();
-        migrateLocalShops().then(() => rebuild()).then(() => clearAllSelections());
+        window.setTimeout(() => {
+          Promise.all([migrateLocalShops(), ratingService.migrateLegacyRatings()])
+            .then(([shopMigration, ratingMigration]) => {
+              if (!shopMigration.success) showNoticeToast(shopMigration.error);
+              if (!ratingMigration.success) showNoticeToast(ratingMigration.error);
+              return Promise.all([rebuild(), ratingService.loadAll()]);
+            })
+            .then(([shopResult, ratingsResult]) => {
+              if (!shopResult.success) showNoticeToast(`Không thể tải quán: ${shopResult.error}`);
+              if (!ratingsResult.success) showNoticeToast(`Không thể tải đánh giá: ${ratingsResult.error}`);
+              clearAllSelections();
+            })
+            .catch((error) => {
+              console.error('Không thể đồng bộ dữ liệu Supabase:', error);
+              showNoticeToast('Không thể đồng bộ dữ liệu. Vui lòng tải lại trang.');
+            });
+        }, 0);
       });
 
       async function rebuild() {
@@ -1371,7 +1407,7 @@
           .order('created_at', { ascending: false });
         if (shopsError) {
           console.error('Không thể tải quán từ Supabase:', shopsError);
-          return;
+          return { success: false, error: shopsError.message };
         }
         remoteShops = shops || [];
 
@@ -1411,15 +1447,45 @@
         FOODS_DATA.foods = foods;
         renderCategoryFilters();
         renderFoodList();
+        return { success: true };
       }
 
       async function migrateLocalShops() {
-        if (!currentUser) return;
-        const raw = localStorage.getItem(KEY);
-        if (!raw) return;
+        if (localShopMigration) return localShopMigration;
+        localShopMigration = migrateLocalShopsOnce();
+        try {
+          return await localShopMigration;
+        } finally {
+          localShopMigration = null;
+        }
+      }
+
+      async function migrateLocalShopsOnce() {
+        if (!currentUser) return { success: true };
+        let raw;
+        try {
+          raw = localStorage.getItem(KEY);
+        } catch (error) {
+          return { success: false, error: 'Không thể đọc dữ liệu quán cũ trên thiết bị này.' };
+        }
+        if (!raw) return { success: true };
         let local = [];
-        try { local = JSON.parse(raw); } catch { local = []; }
-        if (!Array.isArray(local) || local.length === 0) return;
+        try {
+          local = JSON.parse(raw);
+        } catch (error) {
+          return { success: false, error: 'Dữ liệu quán cũ không hợp lệ và được giữ nguyên.' };
+        }
+        if (!Array.isArray(local)) {
+          return { success: false, error: 'Dữ liệu quán cũ không hợp lệ và được giữ nguyên.' };
+        }
+        if (local.length === 0) {
+          try {
+            localStorage.removeItem(KEY);
+          } catch (error) {
+            return { success: false, error: 'Không thể dọn dữ liệu quán cũ khỏi thiết bị.' };
+          }
+          return { success: true };
+        }
 
         let migratedCount = 0;
         let validCount = 0;
@@ -1440,7 +1506,17 @@
           if (!error) migratedCount += 1;
           else console.error('Không thể chuyển quán cũ lên Supabase:', error);
         }
-        if (validCount > 0 && migratedCount === validCount) localStorage.removeItem(KEY);
+        if (validCount > 0 && migratedCount === validCount) {
+          try {
+            localStorage.removeItem(KEY);
+          } catch (error) {
+            return { success: false, error: 'Đã chuyển quán nhưng không thể dọn dữ liệu cũ khỏi thiết bị.' };
+          }
+        }
+        if (validCount === 0 || migratedCount !== validCount) {
+          return { success: false, error: 'Một số quán cũ chưa được chuyển; dữ liệu vẫn được giữ trên thiết bị.' };
+        }
+        return { success: true };
       }
 
       async function addShop(input) {
@@ -2785,7 +2861,12 @@
         totalCount += count;
         if (average > bestAvg) bestAvg = average;
       });
-      return { bestAvg, totalCount };
+      return {
+        bestAvg,
+        totalCount,
+        loaded: ratingService.isLoaded(),
+        error: ratingService.getLoadError()
+      };
     }
 
     function weightedScore(r) {
@@ -2831,8 +2912,15 @@
       }
 
       filtered.forEach((food) => {
-        const { bestAvg, totalCount } = getFoodBestRating(food);
+        const { bestAvg, totalCount, loaded, error } = getFoodBestRating(food);
         const buildingCount = new Set(food.spots.map((s) => s.buildingId)).size;
+        const ratingLabel = error
+          ? 'Không tải được đánh giá'
+          : !loaded
+            ? 'Đang tải đánh giá...'
+            : bestAvg > 0
+              ? `★ ${bestAvg.toFixed(1)} (${totalCount})`
+              : 'Chưa có đánh giá';
 
         const card = document.createElement('div');
         card.className = 'food-card';
@@ -2845,7 +2933,7 @@
             </div>
             <div class="food-card-meta">
               <span>${buildingCount} tòa đang bán</span>
-              <span>${bestAvg > 0 ? `★ ${bestAvg.toFixed(1)} (${totalCount})` : 'Chưa có đánh giá'}</span>
+              <span>${escapeHtml(ratingLabel)}</span>
             </div>
           </div>
         `;
@@ -2927,11 +3015,12 @@
 
       if (undoPayload) {
         undoBtn.classList.remove('hidden');
-        undoBtn.onclick = () => {
+        undoBtn.onclick = async () => {
           clearTimeout(undoToastTimer);
           toast.classList.add('hidden');
-          const res = ratingService.restoreRating(undoPayload.spotId, undoPayload.rating);
+          const res = await ratingService.restoreRating(undoPayload.spotId, undoPayload.rating);
           if (res.success) refreshCurrentView();
+          else showNoticeToast(res.error || 'Không thể khôi phục đánh giá.');
         };
       } else {
         undoBtn.classList.add('hidden');
@@ -2945,8 +3034,8 @@
     }
 
     function handleDeleteSpotRating(spotId) {
-      showDeleteConfirmModal(() => {
-        const res = ratingService.deleteRating(spotId);
+      showDeleteConfirmModal(async () => {
+        const res = await ratingService.deleteRating(spotId);
         if (!res.success) {
           if (res.error) showNoticeToast(res.error);
           return;
@@ -2961,15 +3050,18 @@
       const ui = getSpotReviewState(spot.id);
       const dist = ratingService.getDistribution(spot.id);
       const avgInfo = ratingService.getAverage(spot.id);
-      const currentUid = ratingService.getUserId();
+      const currentUid = ratingService.getCurrentUserId();
+      const loadError = ratingService.getLoadError();
 
       const summary = document.createElement('div');
       summary.className = 'dist-summary';
       const scoreBox = document.createElement('div');
       scoreBox.className = 'dist-score-box';
-      scoreBox.innerHTML = avgInfo.count > 0
-        ? `<div class="dist-score-big">${avgInfo.average.toFixed(1)} ★</div><div class="dist-score-count">${avgInfo.count} đánh giá</div>`
-        : `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">Chưa có</div><div class="dist-score-count">0 đánh giá</div>`;
+      scoreBox.innerHTML = !ratingService.isLoaded()
+        ? `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">${loadError ? 'Lỗi tải' : 'Đang tải'}</div><div class="dist-score-count">đánh giá</div>`
+        : avgInfo.count > 0
+          ? `<div class="dist-score-big">${avgInfo.average.toFixed(1)} ★</div><div class="dist-score-count">${avgInfo.count} đánh giá</div>`
+          : `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">Chưa có</div><div class="dist-score-count">0 đánh giá</div>`;
 
       const barsWrap = document.createElement('div');
       barsWrap.className = 'dist-bars';
@@ -3013,6 +3105,16 @@
         tabsBar.appendChild(tabBtn);
       });
       containerEl.appendChild(tabsBar);
+
+      if (!ratingService.isLoaded()) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = loadError
+          ? 'Không thể tải đánh giá. Vui lòng tải lại trang để thử lại.'
+          : 'Đang tải đánh giá...';
+        containerEl.appendChild(empty);
+        return;
+      }
 
       const { items, hasMore } = ratingService.getRatingsByStar(spot.id, ui.activeStar, ui.page, 5);
       if (items.length === 0) {
@@ -3103,73 +3205,95 @@
       box.className = 'rating-box';
 
       const existing = ratingService.getUserRating(spot.id);
-      let draftStars = existing ? existing.stars : 0;
+      if (!ratingService.getCurrentUserId()) {
+        const authPrompt = document.createElement('div');
+        authPrompt.className = 'comment-form';
+        const message = document.createElement('p');
+        message.className = 'review-empty-text';
+        message.textContent = 'Đăng nhập để chia sẻ đánh giá với mọi người.';
+        const signInButton = document.createElement('button');
+        signInButton.type = 'button';
+        signInButton.className = 'btn btn-primary';
+        signInButton.textContent = 'Đăng nhập để đánh giá';
+        signInButton.addEventListener('click', () => openAuthModal('rating'));
+        authPrompt.append(message, signInButton);
+        box.appendChild(authPrompt);
+      } else {
+        let draftStars = existing ? existing.stars : 0;
+        const row = document.createElement('div');
+        row.className = 'rating-input-row';
+        const label = document.createElement('span');
+        label.style.fontSize = '12px';
+        label.style.color = '#cbd5e1';
+        label.textContent = existing ? `Đánh giá của bạn (${existing.stars}★):` : 'Chạm để đánh giá:';
 
-      const row = document.createElement('div');
-      row.className = 'rating-input-row';
-      const label = document.createElement('span');
-      label.style.fontSize = '12px';
-      label.style.color = '#cbd5e1';
-      label.textContent = existing ? `Đánh giá của bạn (${existing.stars}★):` : 'Chạm để đánh giá:';
+        const starPicker = createStarRating({
+          initialStars: draftStars,
+          onChange: (val) => { draftStars = val; }
+        });
+        row.append(label, starPicker);
+        box.appendChild(row);
 
-      const starPicker = createStarRating({
-        initialStars: draftStars,
-        onChange: (val) => { draftStars = val; }
-      });
+        const form = document.createElement('div');
+        form.className = 'comment-form';
+        const textarea = document.createElement('textarea');
+        textarea.className = 'comment-input';
+        textarea.maxLength = 200;
+        textarea.placeholder = 'Nhận xét ngắn (tùy chọn, tối đa 200 ký tự)...';
+        textarea.value = commentDrafts.get(spot.id) ?? (existing ? existing.comment : '');
+        textarea.dataset.spotForm = spot.id;
 
-      row.appendChild(label);
-      row.appendChild(starPicker);
-      box.appendChild(row);
-
-      const form = document.createElement('div');
-      form.className = 'comment-form';
-
-      const textarea = document.createElement('textarea');
-      textarea.className = 'comment-input';
-      textarea.maxLength = 200;
-      textarea.placeholder = 'Nhận xét ngắn (tùy chọn, tối đa 200 ký tự)...';
-      textarea.value = commentDrafts.get(spot.id) ?? (existing ? existing.comment : '');
-      textarea.dataset.spotForm = spot.id;
-
-      const actions = document.createElement('div');
-      actions.className = 'comment-actions';
-
-      const charCount = document.createElement('span');
-      charCount.className = 'char-count';
-      charCount.textContent = `${textarea.value.length}/200`;
-      textarea.addEventListener('input', () => {
+        const actions = document.createElement('div');
+        actions.className = 'comment-actions';
+        const charCount = document.createElement('span');
+        charCount.className = 'char-count';
         charCount.textContent = `${textarea.value.length}/200`;
-        commentDrafts.set(spot.id, textarea.value);
-      });
+        textarea.addEventListener('input', () => {
+          charCount.textContent = `${textarea.value.length}/200`;
+          commentDrafts.set(spot.id, textarea.value);
+        });
 
-      const submitBtn = document.createElement('button');
-      submitBtn.type = 'button';
-      submitBtn.className = 'btn btn-primary';
-      submitBtn.style.padding = '6px 12px';
-      submitBtn.style.fontSize = '12px';
-      submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
+        const submitBtn = document.createElement('button');
+        submitBtn.type = 'button';
+        submitBtn.className = 'btn btn-primary';
+        submitBtn.style.padding = '6px 12px';
+        submitBtn.style.fontSize = '12px';
+        submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
+        submitBtn.disabled = !ratingService.isLoaded() && !ratingService.getLoadError();
+        if (submitBtn.disabled) submitBtn.textContent = 'Đang tải...';
 
-      submitBtn.addEventListener('click', () => {
-        if (draftStars < 1 || draftStars > 5) {
-          showNoticeToast('Vui lòng chọn từ 1 đến 5 sao trước khi gửi!');
-          return;
-        }
-        ratingService.submitRating(spot.id, draftStars, textarea.value);
-        commentDrafts.delete(spot.id);
-        if (typeof onAfterSubmit === 'function') onAfterSubmit();
-      });
+        submitBtn.addEventListener('click', async () => {
+          if (draftStars < 1 || draftStars > 5) {
+            showNoticeToast('Vui lòng chọn từ 1 đến 5 sao trước khi gửi!');
+            return;
+          }
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Đang gửi...';
+          const result = await ratingService.submitRating(spot.id, draftStars, textarea.value);
+          if (!result.success) {
+            showNoticeToast(`Không thể gửi đánh giá: ${result.error}`);
+            submitBtn.disabled = false;
+            submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
+            return;
+          }
+          commentDrafts.delete(spot.id);
+          showNoticeToast('Đã lưu đánh giá');
+          if (typeof onAfterSubmit === 'function') onAfterSubmit();
+        });
 
-      actions.appendChild(charCount);
-      actions.appendChild(submitBtn);
-      form.appendChild(textarea);
-      form.appendChild(actions);
-      box.appendChild(form);
+        actions.append(charCount, submitBtn);
+        form.append(textarea, actions);
+        box.appendChild(form);
+      }
 
       const ui = getSpotReviewState(spot.id);
       const totalReviews = ratingService.getRatings(spot.id).length;
       const focusEditForm = () => {
-        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        textarea.focus();
+        const textarea = box.querySelector(`textarea[data-spot-form="${spot.id}"]`);
+        if (textarea) {
+          textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          textarea.focus();
+        }
       };
 
       const toggleBtn = document.createElement('button');
@@ -3285,7 +3409,9 @@
             <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">${openInfo.label}</span>
           </span>
           <span style="display:inline-flex; align-items:center; gap:5px; color:#f8fafc;">
-            ${spot.rating.count > 0
+            ${!ratingService.isLoaded()
+              ? `<span style="color:#94a3b8;">${ratingService.getLoadError() ? 'Không tải được đánh giá' : 'Đang tải đánh giá...'}</span>`
+              : spot.rating.count > 0
               ? `${renderHalfStarsHTML(spot.rating.average)} <strong>${spot.rating.average.toFixed(1)}</strong> <span style="color:#94a3b8;">(${spot.rating.count})</span>`
               : `<span style="color:#94a3b8;">Chưa có đánh giá</span>`
             }
@@ -3430,7 +3556,9 @@
             <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">${openInfo.label}</span>
           </span>
           <span style="display:inline-flex; align-items:center; gap:5px; color:#f8fafc;">
-            ${rating.count > 0
+            ${!ratingService.isLoaded()
+              ? `<span style="color:#94a3b8;">${ratingService.getLoadError() ? 'Không tải được đánh giá' : 'Đang tải đánh giá...'}</span>`
+              : rating.count > 0
               ? `${renderHalfStarsHTML(rating.average)} <strong>${rating.average.toFixed(1)}</strong> <span style="color:#94a3b8;">(${rating.count})</span>`
               : `<span style="color:#94a3b8;">Chưa có đánh giá</span>`
             }
@@ -3457,56 +3585,110 @@
       const button = document.getElementById('btn-auth');
       if (!button) return;
       const user = shopService.getCurrentUser();
-      button.textContent = user ? `Đăng xuất (${user.email || 'đã đăng nhập'})` : 'Đăng nhập chủ quán';
+      button.textContent = user ? `👤 ${user.email || 'Đang đăng nhập'}` : '👤 Đăng nhập';
+      button.title = user ? `Đang đăng nhập: ${user.email || 'tài khoản Supabase'}` : 'Đăng nhập để đánh giá hoặc quản lý quán';
+      button.setAttribute('aria-label', user
+        ? `Đăng xuất khỏi tài khoản ${user.email || ''}`
+        : 'Đăng nhập để đánh giá hoặc quản lý quán');
     }
 
-    function openAuthModal() {
+    function openAuthModal(intent = 'shop') {
       const user = shopService.getCurrentUser();
       if (user) {
         showDeleteConfirmModal(async () => {
-          await supabase.auth.signOut();
+          const { error } = await supabase.auth.signOut();
+          if (error) {
+            console.error('Không thể đăng xuất:', error);
+            showNoticeToast(`Không thể đăng xuất: ${error.message}`);
+            return;
+          }
           showNoticeToast('Đã đăng xuất');
-        }, 'Đăng xuất khỏi tài khoản chủ quán?');
+        }, 'Đăng xuất khỏi tài khoản KTX?');
         return;
       }
 
+      const previousFocus = document.activeElement;
+      const postLoginMessage = intent === 'rating'
+        ? 'Sau khi đăng nhập, hãy quay lại món để gửi đánh giá.'
+        : 'Sau khi đăng nhập, hãy quay lại ứng dụng để thêm hoặc quản lý quán.';
       const backdrop = document.createElement('div');
       backdrop.className = 'confirm-modal-backdrop';
+      backdrop.setAttribute('role', 'dialog');
+      backdrop.setAttribute('aria-modal', 'true');
+      backdrop.setAttribute('aria-labelledby', 'auth-modal-title');
       backdrop.innerHTML = `
         <form class="confirm-modal">
-          <h3>Đăng nhập chủ quán</h3>
-          <p>Supabase sẽ gửi liên kết đăng nhập một lần đến email của bạn.</p>
+          <h3 id="auth-modal-title">${intent === 'rating' ? 'Đăng nhập để đánh giá' : 'Đăng nhập chủ quán'}</h3>
+          <p>Nhập email để nhận liên kết đăng nhập một lần. Không cần mật khẩu.</p>
+          <p class="auth-redirect-note">Liên kết sẽ mở ứng dụng KTX đã triển khai, không quay về localhost. ${postLoginMessage}</p>
           <label class="shop-label">Email
             <input name="email" type="email" autocomplete="email" required placeholder="ban@example.com">
           </label>
           <div class="shop-error hidden" role="alert"></div>
+          <div class="auth-success hidden" role="status" aria-live="polite"></div>
           <div class="confirm-modal-actions">
             <button type="button" class="btn" data-act="cancel">Hủy</button>
             <button type="submit" class="btn btn-primary">Gửi liên kết</button>
           </div>
         </form>`;
-      const close = () => backdrop.remove();
+      let resendTimer = null;
+      const close = () => {
+        if (resendTimer) clearInterval(resendTimer);
+        document.removeEventListener('keydown', onKeyDown);
+        backdrop.remove();
+        if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+      };
+      const onKeyDown = (event) => {
+        if (event.key === 'Escape') close();
+      };
       backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
       backdrop.querySelector('[data-act="cancel"]').addEventListener('click', close);
-      backdrop.querySelector('form').addEventListener('submit', async (e) => {
+      const form = backdrop.querySelector('form');
+      const emailInput = form.querySelector('[name="email"]');
+      const submitButton = form.querySelector('[type="submit"]');
+      const cancelButton = form.querySelector('[data-act="cancel"]');
+      const errorEl = form.querySelector('.shop-error');
+      const successEl = form.querySelector('.auth-success');
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const form = e.currentTarget;
-        const errorEl = form.querySelector('.shop-error');
-        const email = new FormData(form).get('email');
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: window.location.href }
-        });
-        if (error) {
-          errorEl.textContent = error.message;
+        errorEl.classList.add('hidden');
+        successEl.classList.add('hidden');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang gửi...';
+        try {
+          const { error } = await supabase.auth.signInWithOtp({
+            email: emailInput.value.trim(),
+            options: { emailRedirectTo: AUTH_REDIRECT_URL }
+          });
+          if (error) throw error;
+          successEl.textContent = `Đã gửi liên kết đến ${emailInput.value.trim()}. Hãy mở email này trên thiết bị muốn đăng nhập.`;
+          successEl.classList.remove('hidden');
+          cancelButton.textContent = 'Đóng';
+          if (resendTimer) clearInterval(resendTimer);
+          let seconds = 30;
+          submitButton.textContent = `Gửi lại sau ${seconds}s`;
+          resendTimer = setInterval(() => {
+            seconds -= 1;
+            if (seconds <= 0) {
+              clearInterval(resendTimer);
+              resendTimer = null;
+              submitButton.disabled = false;
+              submitButton.textContent = 'Gửi lại liên kết';
+              return;
+            }
+            submitButton.textContent = `Gửi lại sau ${seconds}s`;
+          }, 1000);
+        } catch (error) {
+          console.error('Không thể gửi liên kết đăng nhập:', error);
+          errorEl.textContent = error && error.message ? error.message : 'Không thể gửi liên kết. Vui lòng thử lại.';
           errorEl.classList.remove('hidden');
-          return;
+          submitButton.disabled = false;
+          submitButton.textContent = 'Gửi liên kết';
         }
-        close();
-        showNoticeToast('Đã gửi liên kết đăng nhập đến email');
       });
       document.body.appendChild(backdrop);
-      backdrop.querySelector('[name="email"]').focus();
+      document.addEventListener('keydown', onKeyDown);
+      emailInput.focus();
     }
 
     function openShopForm() {
@@ -3844,11 +4026,13 @@
     }
     animate();
 
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'ktx_khub_ratings_v1') refreshCurrentView();
+    document.getElementById('btn-add-shop').addEventListener('click', () => {
+      if (!shopService.getCurrentUser()) {
+        openAuthModal('shop');
+        return;
+      }
+      openShopForm();
     });
-
-    document.getElementById('btn-add-shop').addEventListener('click', openShopForm);
     document.getElementById('btn-auth').addEventListener('click', openAuthModal);
 
     document.addEventListener('keydown', (e) => {
