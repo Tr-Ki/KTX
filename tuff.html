@@ -1,0 +1,3862 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KTX Khu B ĐHQG TP.HCM – Bản đồ 3D & Đồ ăn</title>
+  <style>
+    :root {
+      --bg-panel: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #263449;
+      --border: rgba(148, 163, 184, 0.22);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --star: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: var(--text-main);
+    }
+
+    .app-shell {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ==================== PANEL TRÁI (DESKTOP) / BOTTOM SHEET (MOBILE) ==================== */
+    .food-panel {
+      width: 350px;
+      flex-shrink: 0;
+      height: 100%;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
+    }
+
+    .sheet-handle {
+      display: none;
+    }
+
+    .panel-top {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    .panel-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .panel-brand h1 {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .panel-brand p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .chip-btn {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip-btn.active {
+      background: var(--accent-strong);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .food-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+    }
+
+    .food-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .food-card:active {
+      transform: scale(0.99);
+    }
+
+    .food-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .food-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .food-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .food-card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .detail-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent-strong);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+
+    .btn-danger-soft {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .btn-toggle.active {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: #34d399;
+      color: #a7f3d0;
+    }
+
+    .detail-hero {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(30, 41, 59, 0.9));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .detail-hero h2 {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .detail-hero p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .spot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.15s ease;
+    }
+
+    .spot-card.active-spot {
+      border-color: var(--star);
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+    }
+
+    .spot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .spot-building-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+
+    .spot-shop-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .spot-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .spot-price {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fde047;
+      white-space: nowrap;
+    }
+
+    .spot-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .status-open {
+      background: rgba(34, 197, 94, 0.18);
+      color: #86efac;
+    }
+
+    .status-closed {
+      background: rgba(239, 68, 68, 0.18);
+      color: #fca5a5;
+    }
+
+    .stars-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .star-wrap {
+      position: relative;
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+    }
+
+    .star-wrap svg,
+    .star-fill-mask svg {
+      display: block;
+      width: 15px;
+      height: 15px;
+    }
+
+    .star-fill-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .rating-box {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rating-input-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .star-picker {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .star-pick-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      padding: 4px 3px;
+      color: #475569;
+      transition: transform 0.1s ease, color 0.1s ease;
+    }
+
+    .star-pick-btn.lit {
+      color: var(--star);
+    }
+
+    .star-pick-btn:active {
+      transform: scale(1.15);
+    }
+
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .comment-input {
+      width: 100%;
+      resize: none;
+      min-height: 46px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .comment-input:focus {
+      border-color: var(--accent);
+    }
+
+    .comment-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .char-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 20px 14px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ==================== KHUNG 3D & THANH CÔNG CỤ NỔI ==================== */
+    .viewport-wrap {
+      flex: 1;
+      position: relative;
+      height: 100%;
+      min-width: 0;
+      background: #87ceeb;
+    }
+
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      touch-action: none;
+    }
+
+    .viewport-toolbar {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      left: 12px;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toolbar-pill {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      padding: 6px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+    }
+
+    .controls-hint {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      z-index: 15;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      color: #e2e8f0;
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    .building-label {
+      padding: 3px 8px;
+      border-radius: 7px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #f8fafc;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
+      transition: transform 0.15s ease, background 0.15s ease, opacity 0.2s ease;
+    }
+
+    .building-label.hovered {
+      background: #0284c7;
+      border-color: #bae6fd;
+      transform: scale(1.1);
+    }
+
+    .building-label.selected {
+      background: #f59e0b;
+      color: #0f172a;
+      border-color: #fef3c7;
+      transform: scale(1.16);
+    }
+
+    .building-label.highlighted {
+      background: #10b981;
+      color: #052e16;
+      border-color: #bbf7d0;
+    }
+
+    .building-label.dimmed {
+      opacity: 0.3;
+    }
+
+    .food-pin {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 2px solid #f59e0b;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      user-select: none;
+      animation: pinBounce 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pinBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* ==================== RESPONSIVE MOBILE ==================== */
+    @media (max-width: 767px) {
+      .app-shell { display: block; }
+      .viewport-wrap { width: 100%; height: 100%; }
+      .controls-hint { display: none; }
+
+      .food-panel {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 52dvh;
+        min-height: 135px;
+        max-height: 86dvh;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        border-radius: 18px 18px 0 0;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
+        transition: height 0.2s ease;
+      }
+
+      .food-panel.dragging { transition: none; }
+
+      .sheet-handle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 12px 8px;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .sheet-handle-bar {
+        width: 44px;
+        height: 5px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.55);
+      }
+
+      .panel-top { padding: 6px 14px 10px; }
+      .viewport-toolbar .btn { font-size: 12px; padding: 7px 10px; }
+      .search-box, .comment-input { font-size: 16px; }
+    }
+
+    /* ==================== KHU VỰC BÌNH LUẬN THEO SAO, XÓA, MODAL & TOAST ==================== */
+    .btn-toggle-reviews {
+      width: 100%;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.72);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-toggle-reviews:hover { background: rgba(30, 41, 59, 0.95); }
+    .reviews-accordion {
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dist-summary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dist-score-box { min-width: 86px; text-align: center; flex-shrink: 0; }
+    .dist-score-big { font-size: 22px; font-weight: 800; color: var(--star); line-height: 1.15; }
+    .dist-score-count { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .dist-bars { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .dist-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+      font-size: 11px;
+      text-align: left;
+    }
+    .dist-bar-row:hover { background: rgba(56, 189, 248, 0.12); }
+    .dist-bar-label { width: 26px; font-weight: 700; color: #cbd5e1; flex-shrink: 0; }
+    .dist-bar-track { flex: 1; height: 7px; border-radius: 999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; }
+    .dist-bar-fill { height: 100%; border-radius: 999px; background: var(--star); transition: width 0.2s ease; }
+    .dist-bar-num { width: 22px; text-align: right; color: var(--text-muted); flex-shrink: 0; }
+    .star-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+    .star-tab-btn {
+      flex-shrink: 0;
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .star-tab-btn.active { background: var(--accent-strong); border-color: var(--accent); color: #fff; }
+    .review-item {
+      background: rgba(30, 41, 59, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .review-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .review-stars { color: var(--star); font-weight: 700; letter-spacing: 1px; }
+    .review-author-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--accent);
+      margin-left: 6px;
+    }
+    .review-time { font-size: 11px; color: var(--text-muted); }
+    .review-text { color: #e2e8f0; word-break: break-word; }
+    .review-empty-text { color: var(--text-muted); font-style: italic; }
+    .review-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+    .btn-review-edit {
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(56, 189, 248, 0.12);
+      color: #bae6fd;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-review-delete {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.14);
+      color: #fca5a5;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .btn-review-delete:hover { background: rgba(239, 68, 68, 0.28); }
+    .btn-load-more {
+      width: 100%;
+      min-height: 44px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: rgba(30, 41, 59, 0.55);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .reviews-sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(2, 6, 23, 0.65);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .reviews-bottom-sheet {
+      width: 100%;
+      max-height: 86vh;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      border-radius: 18px 18px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 -14px 40px rgba(0, 0, 0, 0.55);
+    }
+    .reviews-sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .reviews-sheet-body {
+      padding: 14px 16px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .confirm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .confirm-modal {
+      width: 100%;
+      max-width: 340px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .confirm-modal h3 { font-size: 16px; font-weight: 800; }
+    .confirm-modal p { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+    .confirm-modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .confirm-modal-actions .btn { min-height: 44px; min-width: 84px; }
+    .undo-toast {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 90;
+      background: #1e293b;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #f8fafc;
+      padding: 8px 12px 8px 16px;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      max-width: calc(100vw - 24px);
+    }
+    .btn-undo {
+      min-height: 44px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .shop-modal { max-width: 460px; max-height: 90dvh; overflow-y: auto; }
+    .shop-label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 700; color: #cbd5e1; }
+    .shop-modal input:not([type=checkbox]), .shop-modal select {
+      width: 100%; min-height: 44px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: rgba(15, 23, 42, .85);
+      color: var(--text-main); font-size: 16px; font-family: inherit;
+    }
+    .shop-row { display: flex; gap: 8px; }
+    .shop-row > * { flex: 1; min-width: 0; }
+    .bld-cluster > span { font-size: 11px; color: var(--text-muted); }
+    .bld-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .bld-chip { position: relative; }
+    .bld-chip input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .bld-chip span {
+      display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 44px;
+      padding: 0 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-muted); font-size: 13px; font-weight: 700;
+    }
+    .bld-chip input:checked + span { background: var(--accent-strong); border-color: var(--accent); color: #fff; }
+    .bld-chip input:focus-visible + span { outline: 2px solid var(--accent); }
+    .shop-check { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 600; }
+    .shop-error { background: rgba(239, 68, 68, .14); border: 1px solid rgba(239, 68, 68, .4); color: #fca5a5; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .owner-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .owner-tag { font-size: 11px; color: var(--text-muted); }
+    .auth-status { min-height: 44px; display:flex; align-items:center; }
+    .menu-photo-input { min-height: auto !important; padding: 6px 0 !important; border: none !important; background: transparent !important; }
+    .menu-photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .menu-photo-grid img { width: 100%; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+    .menu-photo-delete { width: 100%; margin-top: 4px; }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="food-panel" class="food-panel">
+      <div id="sheet-handle" class="sheet-handle" title="Kéo lên/xuống hoặc chạm để thu gọn/mở rộng">
+        <div class="sheet-handle-bar"></div>
+      </div>
+
+      <div class="panel-top">
+        <div class="panel-brand">
+          <div>
+            <h1>Ẩm thực KTX Khu B</h1>
+            <p>ĐHQG TP.HCM · Sơ đồ chuẩn theo ảnh vệ tinh</p>
+          </div>
+          <button id="btn-clear-selection" class="btn btn-danger-soft hidden" type="button">Bỏ chọn</button>
+        </div>
+
+        <div id="search-controls">
+          <input
+            id="food-search-input"
+            class="search-box"
+            type="search"
+            placeholder="Tìm món ăn hoặc tòa (vd: com tam, B01, E02...)"
+          />
+          <div id="category-filters" class="filter-chips"></div>
+          <button id="btn-add-shop" class="btn btn-primary" type="button" style="width:100%;margin-top:10px;min-height:44px;">➕ Thêm món / quán của bạn</button>
+        </div>
+      </div>
+
+      <div id="panel-body" class="panel-body"></div>
+    </aside>
+
+    <main class="viewport-wrap">
+      <div id="canvas-container"></div>
+
+      <div class="viewport-toolbar">
+        <div class="toolbar-pill">
+          <button id="btn-toggle-detail" class="btn btn-toggle active" type="button">Chi tiết cao: BẬT</button>
+          <button id="btn-gate-view" class="btn" type="button">Xem Cổng KTX</button>
+          <button id="btn-reset-camera" class="btn btn-primary" type="button">Reset góc nhìn</button>
+          <button id="btn-auth" class="btn auth-status" type="button">Đăng nhập chủ quán</button>
+        </div>
+      </div>
+
+      <div class="controls-hint">
+        Chuột trái / 1 ngón: Xoay · Cuộn / 2 ngón: Zoom · Chuột phải: Kéo · Click tòa: Xem món ăn tại tòa
+      </div>
+    </main>
+  </div>
+
+  <div id="mobile-reviews-backdrop" class="reviews-sheet-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="reviews-bottom-sheet">
+      <div class="reviews-sheet-header">
+        <div>
+          <strong id="mobile-reviews-title" style="font-size:15px;">Đánh giá</strong>
+          <div id="mobile-reviews-subtitle" style="font-size:12px; color:#94a3b8;"></div>
+        </div>
+        <button id="btn-close-reviews-sheet" class="btn" style="min-height:44px;" type="button">Đóng</button>
+      </div>
+      <div id="mobile-reviews-body" class="reviews-sheet-body"></div>
+    </div>
+  </div>
+
+  <div id="confirm-delete-modal" class="confirm-modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="confirm-modal">
+      <h3>Xác nhận xóa</h3>
+      <p>Bạn có chắc muốn xóa đánh giá này?</p>
+      <div class="confirm-modal-actions">
+        <button id="btn-cancel-delete" class="btn" type="button">Hủy</button>
+        <button id="btn-confirm-delete" class="btn btn-danger-soft" type="button">Xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="undo-toast" class="undo-toast hidden" role="status" aria-live="polite">
+    <span id="undo-toast-text">Đã xóa đánh giá</span>
+    <button id="btn-undo-delete" class="btn-undo hidden" type="button">Hoàn tác</button>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+    import { createClient } from '@supabase/supabase-js';
+
+    /* =========================================================================
+       1. DỮ LIỆU TÒA NHÀ CHUẨN THEO ẢNH VỆ TINH KTX KHU B
+       Quy ước hệ tọa độ khớp trực diện với ảnh đính kèm:
+       - X: Trái (-X: E02–E03 & bùng binh) -> Phải (+X: Cụm B/BA & Cổng chính)
+       - Z: Trên (-Z: Cụm D02–D06, B01–B05, E04) -> Dưới (+Z: Cụm C01–C06, BA1–BA5, E01)
+       - shapeType:
+         'box'        : Khối chữ nhật
+         'l-left'     : Khối chữ L có nhánh ngang chìa sang trái (D05, C06)
+         'l-right'    : Khối chữ L có nhánh ngang chìa sang phải (D06, C05)
+         'y-shape'    : Khối chữ Y 3 cánh đối xứng (E04, E01)
+         'fork-north' : Nửa trên tòa đôi chữ Y phía Tây bùng binh (E03)
+         'fork-south' : Nửa dưới tòa đôi chữ Y phía Tây bùng binh (E02)
+    ========================================================================= */
+    const BUILDINGS_DATA = [
+      // --- CỤM B (Góc trên bên phải theo ảnh) ---
+      { id: "B01", mapCode: "BB_B01", name: "Tòa B01", cluster: "Khu B", position: [90, -24], size: [10, 9, 24],  rotationY: 0, shapeType: "box", wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "B02", mapCode: "BB_B02", name: "Tòa B02", cluster: "Khu B", position: [73, -24], size: [10, 9, 24],  rotationY: 0, shapeType: "box", wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "B03", mapCode: "BB_B03", name: "Tòa B03", cluster: "Khu B", position: [43, -24], size: [22, 8, 22],  rotationY: 0, shapeType: "box", wallColor: "#e2e6ea", stripeColor: "#eab308", roofColor: "#ca8a04" },
+      { id: "B04", mapCode: "BB_B04", name: "Tòa B04", cluster: "Khu B", position: [90, -49], size: [9, 22, 22],  rotationY: 0, shapeType: "box", wallColor: "#38bdf8", stripeColor: "#eab308", roofColor: "#eab308" },
+      { id: "B05", mapCode: "BB_B05", name: "Tòa B05", cluster: "Khu B", position: [43, -57], size: [22, 8, 22],  rotationY: 0, shapeType: "box", wallColor: "#e2e6ea", stripeColor: "#eab308", roofColor: "#ca8a04" },
+
+      // --- CỤM BA (Góc dưới bên phải theo ảnh) ---
+      { id: "BA1", mapCode: "BA_BA1", name: "Tòa BA1", cluster: "Khu BA", position: [90, 24], size: [10, 9, 24], rotationY: 0, shapeType: "box", wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "BA2", mapCode: "BA_BA2", name: "Tòa BA2", cluster: "Khu BA", position: [73, 24], size: [10, 9, 24], rotationY: 0, shapeType: "box", wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "BA3", mapCode: "BA_BA3", name: "Tòa BA3", cluster: "Khu BA", position: [43, 24], size: [22, 8, 22], rotationY: 0, shapeType: "box", wallColor: "#e2e6ea", stripeColor: "#eab308", roofColor: "#ca8a04" },
+      { id: "BA4", mapCode: "BA_BA4", name: "Tòa BA4", cluster: "Khu BA", position: [84, 57], size: [22, 8, 22], rotationY: 0, shapeType: "box", wallColor: "#e8ecef", stripeColor: "#eab308", roofColor: "#ca8a04" },
+      { id: "BA5", mapCode: "BA_BA5", name: "Tòa BA5", cluster: "Khu BA", position: [43, 57], size: [22, 8, 22], rotationY: 0, shapeType: "box", wallColor: "#e2e6ea", stripeColor: "#eab308", roofColor: "#ca8a04" },
+
+      // --- CỤM D (Phía trên giữa theo ảnh: D02–D04 hàng trước, D05–D06 chữ L hàng sau) ---
+      { id: "D02", mapCode: "BD_D02", name: "Tòa D02", cluster: "Khu D", position: [-5, -26],  size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#22d3ee", stripeColor: "#0284c7", roofColor: "#0369a1" },
+      { id: "D03", mapCode: "BD_D03", name: "Tòa D03", cluster: "Khu D", position: [-23, -24], size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "D04", mapCode: "BD_D04", name: "Tòa D04", cluster: "Khu D", position: [-38, -24], size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#eef2f6", stripeColor: "#16a34a", roofColor: "#0284c7" },
+      { id: "D05", mapCode: "BD_D05", name: "Tòa D05", cluster: "Khu D", position: [-31, -54], size: [17, 17, 26], rotationY: 0, shapeType: "l-left",  wallColor: "#f0e5d1", stripeColor: "#0ea5e9", roofColor: "#0284c7" },
+      { id: "D06", mapCode: "BD_D06", name: "Tòa D06", cluster: "Khu D", position: [-8, -54],  size: [17, 17, 26], rotationY: 0, shapeType: "l-right", wallColor: "#f0e5d1", stripeColor: "#0ea5e9", roofColor: "#0284c7" },
+
+      // --- CỤM C (Phía dưới giữa theo ảnh: C01–C04 hàng trước, C05–C06 chữ L hàng sau) ---
+      { id: "C01", mapCode: "BC_C01", name: "Tòa C01", cluster: "Khu C", position: [11, 25],  size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#f1f5f9", stripeColor: "#0ea5e9", roofColor: "#0284c7" },
+      { id: "C02", mapCode: "BC_C02", name: "Tòa C02", cluster: "Khu C", position: [-4, 25],  size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#f1f5f9", stripeColor: "#0ea5e9", roofColor: "#0284c7" },
+      { id: "C03", mapCode: "BC_C03", name: "Tòa C03", cluster: "Khu C", position: [-23, 24], size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#f1f5f9", stripeColor: "#38bdf8", roofColor: "#0284c7" },
+      { id: "C04", mapCode: "BC_C04", name: "Tòa C04", cluster: "Khu C", position: [-38, 24], size: [10, 9, 22],  rotationY: 0, shapeType: "box",     wallColor: "#f1f5f9", stripeColor: "#38bdf8", roofColor: "#0284c7" },
+      { id: "C05", mapCode: "BC_C05", name: "Tòa C05", cluster: "Khu C", position: [-8, 54],  size: [17, 17, 26], rotationY: 0, shapeType: "l-right", wallColor: "#f3e8d2", stripeColor: "#d97706", roofColor: "#b45309" },
+      { id: "C06", mapCode: "BC_C06", name: "Tòa C06", cluster: "Khu C", position: [-31, 54], size: [17, 17, 26], rotationY: 0, shapeType: "l-left",  wallColor: "#f3e8d2", stripeColor: "#d97706", roofColor: "#b45309" },
+
+      // --- CỤM E (Phía bên trái quanh bùng binh theo ảnh) ---
+      { id: "E01", mapCode: "BE_E01", name: "Tòa E01", cluster: "Khu E", position: [-72, 31],  size: [18, 18, 28], rotationY: 0, shapeType: "y-shape",    wallColor: "#edf2f7", stripeColor: "#16a34a", roofColor: "#64748b", wingAngles: [1.22, -0.35, -2.44] },
+      { id: "E02", mapCode: "BE_E02", name: "Tòa E02", cluster: "Khu E", position: [-98, 11],  size: [16, 20, 32], rotationY: 0, shapeType: "fork-south", wallColor: "#ef4444", stripeColor: "#facc15", roofColor: "#0ea5e9" },
+      { id: "E03", mapCode: "BE_E03", name: "Tòa E03", cluster: "Khu E", position: [-98, -11], size: [16, 20, 32], rotationY: 0, shapeType: "fork-north", wallColor: "#38bdf8", stripeColor: "#facc15", roofColor: "#0284c7" },
+      { id: "E04", mapCode: "BE_E04", name: "Tòa E04", cluster: "Khu E", position: [-72, -31], size: [18, 18, 28], rotationY: 0, shapeType: "y-shape",    wallColor: "#edf2f7", stripeColor: "#16a34a", roofColor: "#64748b", wingAngles: [-1.22, 0.35, 2.44] }
+    ];
+
+    /* =========================================================================
+       2. DỮ LIỆU ĐỒ ĂN MẪU (TÁCH RIÊNG DẠNG JSON – ĐÃ KHỚP MÃ TÒA MỚI)
+       LƯU Ý: Toàn bộ dữ liệu món ăn, tên quán, giá và giờ mở cửa dưới đây
+       chỉ là DỮ LIỆU MẪU ĐỂ DEMO, cần thay bằng dữ liệu khảo sát thực tế.
+    ========================================================================= */
+    const FOODS_DATA = {
+      foods: [
+        {
+          id: "com-tam",
+          name: "Cơm tấm",
+          category: "Món chính",
+          icon: "🍚",
+          spots: [
+            { id: "ct-b1-01", buildingId: "B01", shopName: "Cơm tấm cô Ba", price: 25000, openHours: "10:00-20:30", note: "Gần sảnh B01" },
+            { id: "ct-b4-01", buildingId: "B04", shopName: "Cơm tấm Sài Gòn", price: 30000, openHours: "06:30-14:00", note: "Sườn bì chả" },
+            { id: "ct-c3-01", buildingId: "C03", shopName: "Quán Cơm Sinh Viên C03", price: 25000, openHours: "09:30-21:00", note: "Thêm cơm miễn phí" }
+          ]
+        },
+        {
+          id: "bun-bo",
+          name: "Bún bò Huế",
+          category: "Món chính",
+          icon: "🍜",
+          spots: [
+            { id: "bb-ba2-01", buildingId: "BA2", shopName: "Bún bò O Lan", price: 32000, openHours: "06:00-11:30", note: "Bán buổi sáng" },
+            { id: "bb-c5-01", buildingId: "C05", shopName: "Bún bò C05", price: 30000, openHours: "06:30-21:00", note: "Có giò heo & chả cua" },
+            { id: "bb-d3-01", buildingId: "D03", shopName: "Bún bò Cô Tư", price: 28000, openHours: "16:00-22:00", note: "Nước lèo đậm đà" }
+          ]
+        },
+        {
+          id: "tra-sua",
+          name: "Trà sữa",
+          category: "Đồ uống",
+          icon: "🧋",
+          spots: [
+            { id: "ts-e2-01", buildingId: "E02", shopName: "Trà sữa Bamboo", price: 22000, openHours: "08:00-23:00", note: "Full topping trân châu" },
+            { id: "ts-b3-01", buildingId: "B03", shopName: "Tiệm Trà Nhà B03", price: 20000, openHours: "09:00-22:30", note: "Giảm 2k khi mang ly" },
+            { id: "ts-d2-01", buildingId: "D02", shopName: "Khu B Milk Tea", price: 24000, openHours: "10:00-22:00", note: "Quán có điều hòa" }
+          ]
+        },
+        {
+          id: "banh-mi",
+          name: "Bánh mì",
+          category: "Ăn sáng",
+          icon: "🥖",
+          spots: [
+            { id: "bm-b2-01", buildingId: "B02", shopName: "Bánh mì thịt nướng B02", price: 18000, openHours: "06:00-10:30", note: "Nóng giòn buổi sáng" },
+            { id: "bm-ba1-01", buildingId: "BA1", shopName: "Xe bánh mì chả cá", price: 15000, openHours: "06:00-11:00", note: "Gần trục cổng chính" },
+            { id: "bm-e4-01", buildingId: "E04", shopName: "Bánh mì Que E04", price: 15000, openHours: "15:00-22:30", note: "Bán chiều tối" }
+          ]
+        },
+        {
+          id: "ca-phe",
+          name: "Cà phê",
+          category: "Đồ uống",
+          icon: "☕",
+          spots: [
+            { id: "cf-ba3-01", buildingId: "BA3", shopName: "Cà phê Mini BA3", price: 20000, openHours: "06:30-22:30", note: "Góc học bài yên tĩnh" },
+            { id: "cf-e1-01", buildingId: "E01", shopName: "Cà phê Muối E01", price: 18000, openHours: "07:00-23:00", note: "Bán mang đi & ngồi lại" },
+            { id: "cf-c1-01", buildingId: "C01", shopName: "Cà phê Sáng C01", price: 15000, openHours: "06:00-14:00", note: "Cà phê phin truyền thống" }
+          ]
+        },
+        {
+          id: "mi-cay",
+          name: "Mì cay",
+          category: "Món chính",
+          icon: "🌶️",
+          spots: [
+            { id: "mc-d5-01", buildingId: "D05", shopName: "Mì cay Seoul KTX", price: 38000, openHours: "10:00-22:30", note: "7 cấp độ cay" },
+            { id: "mc-e3-01", buildingId: "E03", shopName: "Mì cay & Tokbokki E03", price: 35000, openHours: "11:00-23:00", note: "Tầng trệt mặt bùng binh" }
+          ]
+        },
+        {
+          id: "nuoc-ep",
+          name: "Nước ép & Sinh tố",
+          category: "Đồ uống",
+          icon: "🥤",
+          spots: [
+            { id: "ne-c2-01", buildingId: "C02", shopName: "Sinh tố Tươi C02", price: 18000, openHours: "09:00-22:00", note: "Ép nguyên chất không đường" },
+            { id: "ne-b5-01", buildingId: "B05", shopName: "Nước ép Ổi Cam B05", price: 16000, openHours: "08:00-21:00", note: "Giao tận sảnh tòa" }
+          ]
+        },
+        {
+          id: "an-vat",
+          name: "Đồ ăn vặt",
+          category: "Ăn vặt",
+          icon: "🍢",
+          spots: [
+            { id: "av-e2-01", buildingId: "E02", shopName: "Bánh tráng trộn & Cá viên", price: 15000, openHours: "15:30-23:00", note: "Đông sinh viên buổi tối" },
+            { id: "av-d4-01", buildingId: "D04", shopName: "Xiên que D04", price: 20000, openHours: "16:00-22:30", note: "Sốt me tự làm" },
+            { id: "av-ba5-01", buildingId: "BA5", shopName: "Bắp xào & Gỏi khô bò", price: 18000, openHours: "16:30-22:00", note: "Sân sau BA5" }
+          ]
+        },
+        {
+          id: "hu-tieu",
+          name: "Hủ tiếu / Phở",
+          category: "Món chính",
+          icon: "🍲",
+          spots: [
+            { id: "ht-c6-01", buildingId: "C06", shopName: "Hủ tiếu Nam Vang C06", price: 28000, openHours: "06:30-21:30", note: "Hủ tiếu khô & nước" },
+            { id: "ht-d6-01", buildingId: "D06", shopName: "Phở bò D06", price: 32000, openHours: "06:00-13:00", note: "Thịt tái nạm mềm" }
+          ]
+        }
+      ]
+    };
+
+    /* =========================================================================
+       3. LỚP DỊCH VỤ ĐÁNH GIÁ (ratingService)
+    ========================================================================= */
+    const ratingService = (() => {
+      const STORAGE_KEY_RATINGS = 'ktx_khub_ratings_v1';
+      const STORAGE_KEY_USER = 'ktx_khub_user_id_v1';
+      let memoryRatings = null;
+      let memoryUserId = null;
+
+      const DEMO_SEED_RATINGS = {
+        "ct-b1-01": [
+          { userId: "demo_1", stars: 5, comment: "Sườn ướp ngon, cơm dẻo vừa miệng.", updatedAt: Date.now() - 86400000 * 2 },
+          { userId: "demo_2", stars: 4, comment: "Giá sinh viên ổn áp, trưa hơi đông.", updatedAt: Date.now() - 86400000 }
+        ],
+        "ct-b4-01": [
+          { userId: "demo_3", stars: 4, comment: "Phần ăn đầy đặn, có canh chua.", updatedAt: Date.now() - 72000000 }
+        ],
+        "ts-e2-01": [
+          { userId: "demo_4", stars: 5, comment: "Trà sữa ít ngọt uống rất thơm!", updatedAt: Date.now() - 40000000 },
+          { userId: "demo_5", stars: 4, comment: "Trân châu mềm, phục vụ nhanh.", updatedAt: Date.now() - 12000000 }
+        ],
+        "bb-c5-01": [
+          { userId: "demo_6", stars: 5, comment: "Tô to, nước dùng đậm vị Huế.", updatedAt: Date.now() - 50000000 }
+        ],
+        "mc-d5-01": [
+          { userId: "demo_7", stars: 4, comment: "Cấp độ 2 vừa ăn, topping nhiều.", updatedAt: Date.now() - 36000000 }
+        ],
+        "av-e2-01": [
+          { userId: "demo_8", stars: 5, comment: "Bánh tráng dẻo ngon, tối hay tụ tập.", updatedAt: Date.now() - 18000000 }
+        ],
+        "ts-b3-01": [
+          { userId: "demo_9", stars: 3, comment: "Hơi ngọt, chờ lâu giờ cao điểm.", updatedAt: Date.now() - 30000000 },
+          { userId: "demo_10", stars: 1, comment: "Hết trân châu lúc 8 giờ tối.", updatedAt: Date.now() - 9000000 }
+        ],
+        "bb-ba2-01": [
+          { userId: "demo_11", stars: 2, comment: "Nước lèo nhạt, bán hơi sớm hết.", updatedAt: Date.now() - 20000000 }
+        ]
+      };
+
+      function sanitizeAll(obj) {
+        const out = {};
+        if (!obj || typeof obj !== 'object') return out;
+        for (const [k, list] of Object.entries(obj)) {
+          if (!Array.isArray(list)) continue;
+          out[k] = list
+            .filter((r) => r && typeof r.userId === 'string' && Number.isInteger(Number(r.stars)) && r.stars >= 1 && r.stars <= 5)
+            .map((r) => ({
+              userId: r.userId,
+              stars: Number(r.stars),
+              comment: typeof r.comment === 'string' ? r.comment.slice(0, 200) : '',
+              updatedAt: Number(r.updatedAt) || 0
+            }));
+        }
+        return out;
+      }
+
+      function safeLoadAll() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_RATINGS);
+          if (raw) {
+            memoryRatings = sanitizeAll(JSON.parse(raw));
+            return memoryRatings;
+          }
+          if (!memoryRatings) {
+            memoryRatings = sanitizeAll(DEMO_SEED_RATINGS);
+            localStorage.setItem(STORAGE_KEY_RATINGS, JSON.stringify(memoryRatings));
+          }
+          return memoryRatings;
+        } catch (err) {
+          if (!memoryRatings) memoryRatings = sanitizeAll(DEMO_SEED_RATINGS);
+          return memoryRatings;
+        }
+      }
+
+      function safeSaveAll(allRatings, allowMemoryFallback = true) {
+        try {
+          localStorage.setItem(STORAGE_KEY_RATINGS, JSON.stringify(allRatings));
+          memoryRatings = allRatings;
+          return true;
+        } catch (err) {
+          if (allowMemoryFallback) memoryRatings = allRatings;
+          return false;
+        }
+      }
+
+      function getUserId() {
+        if (memoryUserId) return memoryUserId;
+        try {
+          let uid = localStorage.getItem(STORAGE_KEY_USER);
+          if (!uid) {
+            uid = 'usr_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+            localStorage.setItem(STORAGE_KEY_USER, uid);
+          }
+          memoryUserId = uid;
+          return uid;
+        } catch (err) {
+          memoryUserId = 'usr_temp_' + Math.random().toString(36).slice(2, 8);
+          return memoryUserId;
+        }
+      }
+
+      function getRatings(spotId) {
+        const all = safeLoadAll();
+        const list = Array.isArray(all[spotId]) ? all[spotId] : [];
+        return [...list].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      }
+
+      function getUserRating(spotId) {
+        const uid = getUserId();
+        return getRatings(spotId).find((r) => r.userId === uid) || null;
+      }
+
+      function submitRating(spotId, stars, comment = '') {
+        const cleanStars = Math.round(Number(stars));
+        if (!Number.isFinite(cleanStars) || cleanStars < 1 || cleanStars > 5) {
+          throw new Error('Số sao phải nằm trong khoảng 1 đến 5.');
+        }
+
+        const cleanComment = String(comment || '').trim().slice(0, 200);
+        const uid = getUserId();
+        const all = safeLoadAll();
+        const list = Array.isArray(all[spotId]) ? [...all[spotId]] : [];
+
+        const existingIdx = list.findIndex((r) => r.userId === uid);
+        const record = { userId: uid, stars: cleanStars, comment: cleanComment, updatedAt: Date.now() };
+        if (existingIdx >= 0) list[existingIdx] = record;
+        else list.push(record);
+
+        all[spotId] = list;
+        safeSaveAll(all, true);
+        return getRatings(spotId);
+      }
+
+      function deleteRating(spotId) {
+        try {
+          const uid = getUserId();
+          const all = safeLoadAll();
+          const list = Array.isArray(all[spotId]) ? all[spotId] : [];
+          const targetIdx = list.findIndex((r) => r.userId === uid);
+          if (targetIdx < 0) return { success: false, removed: null };
+
+          const removed = { ...list[targetIdx] };
+          const nextAll = { ...all, [spotId]: list.filter((_, idx) => idx !== targetIdx) };
+          const saved = safeSaveAll(nextAll, false);
+          if (!saved) return { success: false, removed: null, error: 'Không thể xóa lúc này' };
+          return { success: true, removed };
+        } catch (err) {
+          return { success: false, removed: null, error: 'Không thể xóa lúc này' };
+        }
+      }
+
+      function restoreRating(spotId, rating) {
+        if (!rating || rating.userId !== getUserId()) return { success: false };
+        try {
+          const all = safeLoadAll();
+          const list = Array.isArray(all[spotId]) ? [...all[spotId]] : [];
+          const existingIdx = list.findIndex((r) => r.userId === rating.userId);
+          if (existingIdx >= 0) list[existingIdx] = { ...rating };
+          else list.push({ ...rating });
+          safeSaveAll({ ...all, [spotId]: list }, true);
+          return { success: true };
+        } catch (err) {
+          return { success: false };
+        }
+      }
+
+      function getRatingsByStar(spotId, star = 'all', page = 1, pageSize = 5) {
+        const all = getRatings(spotId);
+        const filtered = (star === 'all' || !star)
+          ? all
+          : all.filter((r) => Number(r.stars) === Number(star));
+        const limit = Math.max(1, Number(page)) * pageSize;
+        return {
+          items: filtered.slice(0, limit),
+          total: filtered.length,
+          hasMore: filtered.length > limit
+        };
+      }
+
+      function getDistribution(spotId) {
+        const list = getRatings(spotId);
+        const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, total: list.length };
+        list.forEach((r) => {
+          const stars = Number(r.stars);
+          if (stars >= 1 && stars <= 5) dist[stars] += 1;
+        });
+        return dist;
+      }
+
+      function getAverage(spotId) {
+        const list = getRatings(spotId);
+        if (list.length === 0) return { average: 0, count: 0 };
+        const sum = list.reduce((acc, item) => acc + Number(item.stars || 0), 0);
+        return { average: Number((sum / list.length).toFixed(1)), count: list.length };
+      }
+
+      return {
+        getUserId, getRatings, getUserRating, submitRating,
+        deleteRating, restoreRating, getRatingsByStar, getDistribution, getAverage
+      };
+    })();
+
+    const SHOP_CATEGORIES = ['Món chính', 'Ăn sáng', 'Đồ uống', 'Ăn vặt', 'Khác'];
+    const SHOP_ICONS = ['🍚', '🍜', '🧋', '🥖', '☕', '🌶️', '🥤', '🍢', '🍲', '🍗', '🍕', '🍰', '🥗', '🍳'];
+
+    const SUPABASE_URL = 'https://fbwvypwbrpgpgcgryjbs.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UUaPSefP6uWuvevBz_xcGw_HcOVN9rS';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    const MENU_BUCKET = 'ktx-menu-photos';
+    const MAX_MENU_PHOTOS = 5;
+    const MAX_MENU_PHOTO_BYTES = 5 * 1024 * 1024;
+
+    const shopService = (() => {
+      const KEY = 'ktx_khub_shops_v1';
+      const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
+      const MAX_PER_OWNER = 20;
+      const BASE = JSON.parse(JSON.stringify(FOODS_DATA.foods));
+      let remoteShops = [];
+      let remotePhotos = [];
+      let currentUser = null;
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        updateAuthButton();
+        migrateLocalShops().then(() => rebuild()).then(() => clearAllSelections());
+      });
+
+      async function rebuild() {
+        const { data: shops, error: shopsError } = await supabase
+          .from('shops')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (shopsError) {
+          console.error('Không thể tải quán từ Supabase:', shopsError);
+          return;
+        }
+        remoteShops = shops || [];
+
+        const { data: photos, error: photosError } = await supabase
+          .from('menu_photos')
+          .select('*')
+          .order('created_at', { ascending: true });
+        if (photosError) console.error('Không thể tải ảnh menu từ Supabase:', photosError);
+        remotePhotos = photos || [];
+
+        const foods = JSON.parse(JSON.stringify(BASE));
+        remoteShops.forEach((r) => {
+          const key = normalizeVietnamese(r.food_name);
+          let food = foods.find((f) => normalizeVietnamese(f.name) === key);
+          if (!food) {
+            food = {
+              id: 'u-' + (normalizeVietnamese(r.food_name).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || r.id),
+              name: r.food_name,
+              category: SHOP_CATEGORIES.includes(r.category) ? r.category : 'Khác',
+              icon: SHOP_ICONS.includes(r.icon) ? r.icon : '🍽️',
+              spots: []
+            };
+            foods.push(food);
+          }
+          food.spots.push({
+            id: r.id,
+            buildingId: r.building_id,
+            shopName: r.shop_name,
+            price: Number(r.price),
+            openHours: r.open_hours,
+            note: r.note || '',
+            custom: true,
+            ownerId: r.owner_id,
+            photos: remotePhotos.filter((photo) => photo.shop_id === r.id)
+          });
+        });
+        FOODS_DATA.foods = foods;
+        renderCategoryFilters();
+        renderFoodList();
+      }
+
+      async function migrateLocalShops() {
+        if (!currentUser) return;
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return;
+        let local = [];
+        try { local = JSON.parse(raw); } catch { local = []; }
+        if (!Array.isArray(local) || local.length === 0) return;
+
+        let migratedCount = 0;
+        let validCount = 0;
+        for (const r of local) {
+          if (!r || !BUILDINGS_DATA.some((b) => b.id === r.buildingId)) continue;
+          validCount += 1;
+          const { error } = await supabase.from('shops').insert({
+            owner_id: currentUser.id,
+            food_name: r.foodName,
+            shop_name: r.shopName,
+            building_id: r.buildingId,
+            category: SHOP_CATEGORIES.includes(r.category) ? r.category : 'Khác',
+            icon: SHOP_ICONS.includes(r.icon) ? r.icon : '🍽️',
+            price: Number(r.price),
+            open_hours: r.openHours,
+            note: r.note || ''
+          });
+          if (!error) migratedCount += 1;
+          else console.error('Không thể chuyển quán cũ lên Supabase:', error);
+        }
+        if (validCount > 0 && migratedCount === validCount) localStorage.removeItem(KEY);
+      }
+
+      async function addShop(input) {
+        if (!currentUser) return { ok: false, error: 'Hãy đăng nhập bằng email trước khi đăng quán.' };
+        const clean = (v, n) => String(v || '').trim().replace(/\s+/g, ' ').slice(0, n);
+        const foodName = clean(input.foodName, 40);
+        const shopName = clean(input.shopName, 40);
+        const note = clean(input.note, 80);
+        const price = Math.round(Number(input.price));
+        const openHours = String(input.openHours || '');
+        const buildings = [...new Set(Array.isArray(input.buildingIds) ? input.buildingIds : [])]
+          .filter((id) => BUILDINGS_DATA.some((b) => b.id === id));
+
+        if (foodName.length < 2) return { ok: false, error: 'Tên món phải từ 2 ký tự.' };
+        if (shopName.length < 2) return { ok: false, error: 'Tên quán phải từ 2 ký tự.' };
+        if (!Number.isFinite(price) || price < 1000 || price > 1000000) return { ok: false, error: 'Giá phải từ 1.000đ đến 1.000.000đ.' };
+        if (buildings.length === 0) return { ok: false, error: 'Hãy chọn ít nhất một tòa.' };
+        if (!TIME_RE.test(openHours) || openHours.slice(0, 5) === openHours.slice(6)) {
+          return { ok: false, error: 'Giờ mở và giờ đóng không hợp lệ.' };
+        }
+
+        const files = Array.from(input.files || []);
+        if (files.length > MAX_MENU_PHOTOS) return { ok: false, error: `Tối đa ${MAX_MENU_PHOTOS} ảnh menu.` };
+        const invalidFile = files.find((file) =>
+          !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > MAX_MENU_PHOTO_BYTES);
+        if (invalidFile) return { ok: false, error: 'Ảnh phải là JPG, PNG hoặc WebP và mỗi ảnh tối đa 5 MB.' };
+
+        const ownedCount = remoteShops.filter((r) => r.owner_id === currentUser.id).length;
+        if (ownedCount + buildings.length > MAX_PER_OWNER) {
+          return { ok: false, error: `Mỗi người đăng tối đa ${MAX_PER_OWNER} điểm bán.` };
+        }
+
+        const existing = FOODS_DATA.foods.find((f) => normalizeVietnamese(f.name) === normalizeVietnamese(foodName));
+        const category = existing ? existing.category : (SHOP_CATEGORIES.includes(input.category) ? input.category : 'Khác');
+        const icon = existing ? existing.icon : (SHOP_ICONS.includes(input.icon) ? input.icon : '🍽️');
+        let firstFoodId = null;
+        let firstBuildingId = null;
+        const createdShopIds = [];
+        const uploadedObjectPaths = [];
+
+        const rollback = async () => {
+          if (uploadedObjectPaths.length) {
+            const { error: storageError } = await supabase.storage.from(MENU_BUCKET).remove(uploadedObjectPaths);
+            if (storageError) console.error('Không thể dọn ảnh menu sau lỗi đăng quán:', storageError);
+          }
+          if (createdShopIds.length) {
+            const { error: shopError } = await supabase.from('shops').delete()
+              .in('id', createdShopIds).eq('owner_id', currentUser.id);
+            if (shopError) console.error('Không thể dọn dữ liệu quán sau lỗi đăng quán:', shopError);
+            return shopError;
+          }
+          return null;
+        };
+
+        for (const buildingId of buildings) {
+          const duplicate = remoteShops.find((r) => r.owner_id === currentUser.id
+            && r.building_id === buildingId
+            && normalizeVietnamese(r.shop_name) === normalizeVietnamese(shopName)
+            && normalizeVietnamese(r.food_name) === normalizeVietnamese(foodName));
+          if (duplicate) {
+            await rollback();
+            return { ok: false, error: `Bạn đã đăng quán này ở tòa ${buildingId}.` };
+          }
+
+          const { data: shop, error } = await supabase.from('shops').insert({
+            owner_id: currentUser.id,
+            food_name: existing ? existing.name : foodName,
+            shop_name: shopName,
+            building_id: buildingId,
+            category,
+            icon,
+            price,
+            open_hours: openHours,
+            note
+          }).select('*').single();
+          if (error) {
+            const cleanupError = await rollback();
+            return { ok: false, error: cleanupError
+              ? `${error.message} (không dọn được dữ liệu một phần: ${cleanupError.message})`
+              : error.message };
+          }
+          createdShopIds.push(shop.id);
+          firstFoodId ||= 'u-' + (normalizeVietnamese(existing ? existing.name : foodName).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || shop.id);
+          firstBuildingId ||= buildingId;
+
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+            const objectPath = `${currentUser.id}/${shop.id}/${crypto.randomUUID()}.${ext}`;
+            const { error: uploadError } = await supabase.storage.from(MENU_BUCKET).upload(objectPath, file, {
+              contentType: file.type,
+              upsert: false
+            });
+            if (uploadError) {
+              const cleanupError = await rollback();
+              return { ok: false, error: cleanupError
+                ? `Không thể tải ảnh: ${uploadError.message} (không dọn được dữ liệu một phần: ${cleanupError.message})`
+                : `Không thể tải ảnh: ${uploadError.message}` };
+            }
+            uploadedObjectPaths.push(objectPath);
+            const { data: publicData } = supabase.storage.from(MENU_BUCKET).getPublicUrl(objectPath);
+            const { error: metadataError } = await supabase.from('menu_photos').insert({
+              shop_id: shop.id,
+              owner_id: currentUser.id,
+              object_path: objectPath,
+              public_url: publicData.publicUrl,
+              mime_type: file.type,
+              size_bytes: file.size
+            });
+            if (metadataError) {
+              const cleanupError = await rollback();
+              return { ok: false, error: cleanupError
+                ? `${metadataError.message} (không dọn được dữ liệu một phần: ${cleanupError.message})`
+                : metadataError.message };
+            }
+          }
+        }
+
+        await rebuild();
+        const food = FOODS_DATA.foods.find((f) => normalizeVietnamese(f.name) === normalizeVietnamese(existing ? existing.name : foodName));
+        return { ok: true, foodId: food?.id || firstFoodId, buildingId: firstBuildingId };
+      }
+
+      async function removeShop(spotId) {
+        if (!currentUser) return { ok: false };
+        const shop = remoteShops.find((r) => r.id === spotId && r.owner_id === currentUser.id);
+        if (!shop) return { ok: false };
+        const photos = remotePhotos.filter((r) => r.shop_id === spotId);
+        if (photos.length) {
+          const { error: storageError } = await supabase.storage.from(MENU_BUCKET)
+            .remove(photos.map((photo) => photo.object_path));
+          if (storageError) return { ok: false, error: storageError.message };
+        }
+        const { error } = await supabase.from('shops').delete().eq('id', spotId).eq('owner_id', currentUser.id);
+        if (error) return { ok: false, error: error.message };
+        await rebuild();
+        return { ok: true };
+      }
+
+      async function deletePhoto(photo) {
+        if (!currentUser) return 'Bạn cần đăng nhập lại.';
+        const { error: storageError } = await supabase.storage.from(MENU_BUCKET).remove([photo.object_path]);
+        if (storageError) return storageError.message;
+        const { error } = await supabase.from('menu_photos').delete()
+          .eq('id', photo.id).eq('owner_id', currentUser.id);
+        if (!error) await rebuild();
+        return error ? error.message : null;
+      }
+
+      function getCurrentUser() { return currentUser; }
+      return { rebuild, addShop, removeShop, deletePhoto, migrateLocalShops, getCurrentUser };
+    })();
+
+    /* =========================================================================
+       4. TIỆN ÍCH CHUNG
+    ========================================================================= */
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function normalizeVietnamese(str) {
+      return String(str || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+        .toLowerCase().trim();
+    }
+
+    function formatPrice(vnd) {
+      return Number(vnd || 0).toLocaleString('vi-VN') + 'đ';
+    }
+
+    function getOpenStatus(openHours) {
+      const match = String(openHours || '').match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+      if (!match) return { isOpen: false, label: 'Chưa rõ giờ' };
+
+      const startMin = Number(match[1]) * 60 + Number(match[2]);
+      const endMin = Number(match[3]) * 60 + Number(match[4]);
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      const isOpen = endMin >= startMin
+        ? (nowMin >= startMin && nowMin < endMin)
+        : (nowMin >= startMin || nowMin < endMin);
+
+      return { isOpen, label: isOpen ? 'Đang mở' : 'Đã đóng' };
+    }
+
+    function renderHalfStarsHTML(average) {
+      const starSvg = '<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+      let html = '<span class="stars-display" aria-label="' + average + ' sao">';
+      for (let i = 1; i <= 5; i++) {
+        const rounded = Math.round(average * 2) / 2;
+        const fillPct = rounded >= i ? 100 : (rounded >= i - 0.5 ? 50 : 0);
+        html += `
+          <span class="star-wrap">
+            <span style="color:#475569; fill:#475569;">${starSvg}</span>
+            <span class="star-fill-mask" style="width:${fillPct}%; color:#f59e0b; fill:#f59e0b;">${starSvg}</span>
+          </span>
+        `;
+      }
+      html += '</span>';
+      return html;
+    }
+
+    function createStarRating({ initialStars = 0, onChange }) {
+      const wrap = document.createElement('div');
+      wrap.className = 'star-picker';
+      let current = initialStars;
+
+      const paint = (val) => {
+        wrap.querySelectorAll('.star-pick-btn').forEach((btn, idx) => {
+          btn.classList.toggle('lit', idx + 1 <= val);
+        });
+      };
+
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'star-pick-btn';
+        btn.textContent = '★';
+        btn.setAttribute('aria-label', `Chọn ${i} sao`);
+        btn.addEventListener('mouseenter', () => paint(i));
+        btn.addEventListener('mouseleave', () => paint(current));
+        btn.addEventListener('click', () => {
+          current = i;
+          paint(current);
+          if (typeof onChange === 'function') onChange(current);
+        });
+        wrap.appendChild(btn);
+      }
+
+      paint(current);
+      return wrap;
+    }
+
+    /* =========================================================================
+       5. KHỞI TẠO 3D SCENE, CAMERA, RENDERERS & CONTROLS
+    ========================================================================= */
+    const container = document.getElementById('canvas-container');
+    // Góc nhìn mặc định khớp đúng hướng ảnh vệ tinh: E02-E03 trái, Cổng phải, B/D trên, BA/C dưới
+    const DEFAULT_CAMERA_POS = new THREE.Vector3(0, 155, 165);
+    const DEFAULT_TARGET = new THREE.Vector3(-4, 0, 2);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog('#c9e7f8', 240, 520);
+
+    const camera = new THREE.PerspectiveCamera(44, 1, 0.5, 1100);
+    camera.position.copy(DEFAULT_CAMERA_POS);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    container.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.left = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    container.appendChild(labelRenderer.domElement);
+
+    function updateRendererSize() {
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || window.innerHeight;
+      camera.aspect = w / h;
+      if (window.innerWidth <= 767) {
+        const shift = Math.round(document.getElementById('food-panel').getBoundingClientRect().height / 2);
+        camera.setViewOffset(w, h, 0, shift, w, h);
+      } else {
+        camera.clearViewOffset();
+      }
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      labelRenderer.setSize(w, h);
+    }
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.copy(DEFAULT_TARGET);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.maxPolarAngle = Math.PI / 2 - 0.03;
+    controls.minDistance = 18;
+    controls.maxDistance = 350;
+    controls.update();
+
+    const hemiLight = new THREE.HemisphereLight('#e0f2fe', '#5d8a47', 0.72);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight('#fffbeb', 1.35);
+    sunLight.position.set(110, 165, 80);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 25;
+    sunLight.shadow.camera.far = 450;
+    sunLight.shadow.bias = -0.0005;
+    const shadowRange = 160;
+    sunLight.shadow.camera.left = -shadowRange;
+    sunLight.shadow.camera.right = shadowRange;
+    sunLight.shadow.camera.top = shadowRange;
+    sunLight.shadow.camera.bottom = -shadowRange;
+    scene.add(sunLight);
+
+    const highDetailObjects = [];
+    const cloudGroup = new THREE.Group();
+
+    function createSkyAndClouds() {
+      const skyGeo = new THREE.SphereGeometry(540, 32, 20);
+      const skyMat = new THREE.ShaderMaterial({
+        side: THREE.BackSide,
+        depthWrite: false,
+        uniforms: {
+          topColor: { value: new THREE.Color('#3b82f6') },
+          midColor: { value: new THREE.Color('#93c5fd') },
+          bottomColor: { value: new THREE.Color('#e0f2fe') }
+        },
+        vertexShader: `
+          varying vec3 vWorldPos;
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPos = worldPos.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 topColor;
+          uniform vec3 midColor;
+          uniform vec3 bottomColor;
+          varying vec3 vWorldPos;
+          void main() {
+            float h = normalize(vWorldPos).y;
+            vec3 col = mix(bottomColor, midColor, smoothstep(0.0, 0.25, max(h, 0.0)));
+            col = mix(col, topColor, smoothstep(0.25, 0.85, max(h, 0.0)));
+            gl_FragColor = vec4(col, 1.0);
+          }
+        `
+      });
+      scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+      const cloudMat = new THREE.MeshStandardMaterial({
+        color: '#ffffff', roughness: 0.95, metalness: 0, transparent: true, opacity: 0.9
+      });
+      const puffGeo = new THREE.IcosahedronGeometry(1, 1);
+      [[-120, 115, -135, 1.2], [105, 120, -110, 1.4], [-150, 100, 45, 1.0], [140, 110, 65, 1.3], [0, 125, -170, 1.5], [-40, 108, 150, 1.1]]
+        .forEach(([cx, cy, cz, scale]) => {
+          const c = new THREE.Group();
+          [[0, 0, 0, 11, 5.5, 7], [-8, -1, 1.5, 7.5, 4.5, 5.5], [8.5, -1.2, -1, 8, 4.5, 6], [2, 2.5, 0, 7, 4.2, 5.5]]
+            .forEach(([px, py, pz, sx, sy, sz]) => {
+              const m = new THREE.Mesh(puffGeo, cloudMat);
+              m.position.set(px, py, pz);
+              m.scale.set(sx, sy, sz);
+              c.add(m);
+            });
+          c.position.set(cx, cy, cz);
+          c.scale.setScalar(scale);
+          cloudGroup.add(c);
+        });
+      scene.add(cloudGroup);
+      highDetailObjects.push(cloudGroup);
+    }
+
+    function createGrassTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#5a9949';
+      ctx.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 1800; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#6bb356' : '#4b863c';
+        ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(30, 30);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function createBrickWalkwayTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128; canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(0, 0, 128, 128);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      for (let y = 0; y < 128; y += 16) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(128, y); ctx.stroke();
+        const offset = (y / 16) % 2 === 0 ? 0 : 16;
+        for (let x = offset; x < 128; x += 32) {
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 16); ctx.stroke();
+        }
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(6, 6);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    const facadeTextureCache = new Map();
+
+    function createBuildingFacade(data) {
+      const key = `${data.wallColor}_${data.stripeColor}`;
+      if (!facadeTextureCache.has(key)) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = data.wallColor;
+        ctx.fillRect(0, 0, 256, 512);
+
+        ctx.fillStyle = data.stripeColor;
+        ctx.fillRect(108, 0, 40, 512);
+        ctx.fillRect(0, 0, 10, 512);
+        ctx.fillRect(246, 0, 10, 512);
+
+        const floors = 12;
+        const groundH = 44;
+        const floorH = (512 - groundH) / floors;
+        const cols = 6;
+        const colW = 224 / cols;
+
+        for (let f = 0; f < floors; f++) {
+          const yTop = f * floorH;
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.10)';
+          ctx.fillRect(10, yTop + floorH - 5, 236, 4);
+
+          for (let c = 0; c < cols; c++) {
+            const xLeft = 16 + c * colW;
+            const winW = colW - 10;
+            const winH = floorH * 0.56;
+            const winY = yTop + 6;
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(xLeft - 1, winY - 1, winW + 2, winH + 2);
+            ctx.fillStyle = (f + c) % 5 === 0 ? '#3b82f6' : '#1e293b';
+            ctx.fillRect(xLeft, winY, winW, winH);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+            ctx.fillRect(xLeft + 2, winY + 2, winW * 0.35, winH - 4);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.fillRect(xLeft - 2, winY + winH + 1, winW + 4, 3);
+          }
+        }
+
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(0, 512 - groundH, 256, groundH);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(92, 512 - groundH + 8, 72, groundH - 8);
+        ctx.fillStyle = 'rgba(186, 230, 253, 0.35)';
+        ctx.fillRect(96, 512 - groundH + 12, 30, groundH - 14);
+        ctx.fillRect(130, 512 - groundH + 12, 30, groundH - 14);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        facadeTextureCache.set(key, tex);
+      }
+
+      return new THREE.MeshStandardMaterial({
+        map: facadeTextureCache.get(key),
+        roughness: 0.72,
+        metalness: 0.08
+      });
+    }
+
+    const brickTex = createBrickWalkwayTexture();
+
+    /* =========================================================================
+       MẶT ĐẤT, MẠNG LƯỚI ĐƯỜNG, CÔNG VIÊN TRUNG TÂM, SÂN ĐẤT & BÙNG BINH THEO ẢNH
+    ========================================================================= */
+    function createCampusGround() {
+      const group = new THREE.Group();
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(520, 480),
+        new THREE.MeshStandardMaterial({ map: createGrassTexture(), roughness: 0.95 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      group.add(ground);
+
+      const asphaltMat = new THREE.MeshStandardMaterial({ color: '#334155', roughness: 0.88 });
+      const sidewalkMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.85 });
+      const brickMat = new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.82 });
+      const stripeMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.7 });
+      const lawnMat = new THREE.MeshStandardMaterial({ color: '#4d8a42', roughness: 0.95 });
+      const sandFieldMat = new THREE.MeshStandardMaterial({ color: '#9c7e62', roughness: 0.96 });
+      const courtMat = new THREE.MeshStandardMaterial({ color: '#c2593f', roughness: 0.88 });
+
+      const addBox = (w, h, d, x, y, z, mat) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+        m.position.set(x, y, z);
+        m.receiveShadow = true;
+        group.add(m);
+        return m;
+      };
+
+      // --- 1) Đường bao quanh toàn khu KTX ---
+      addBox(226, 0.14, 7, -1, 0.07, -70, asphaltMat);   // Đường biên trên (Bắc)
+      addBox(226, 0.14, 7, -1, 0.07, 70, asphaltMat);    // Đường biên dưới (Nam)
+      addBox(8, 0.14, 152, 114, 0.07, 0, asphaltMat);    // Đường chính ngoài cổng bên phải (Đông)
+      addBox(7, 0.14, 146, -114, 0.07, 0, asphaltMat);   // Đường biên bên trái sau E02-E03
+
+      // --- 2) Hai trục đường ngang trung tâm song song ---
+      addBox(166, 0.15, 6.5, 19, 0.075, -12, asphaltMat); // Đường ngang trên (giữa D/B và công viên)
+      addBox(166, 0.15, 6.5, 19, 0.075, 12, asphaltMat);  // Đường ngang dưới (giữa C/BA và công viên)
+
+      // --- 3) Các đường dọc cắt ngang bên trong khu ---
+      addBox(5.5, 0.15, 142, -49, 0.075, 0, asphaltMat); // Đường dọc giữa E và D/C (qua trước bùng binh)
+      addBox(5.5, 0.15, 142, 22, 0.075, 0, asphaltMat);  // Đường dọc ngăn giữa D/C và B/BA
+      addBox(4, 0.14, 42, 62, 0.07, -40, asphaltMat);    // Đường nhánh giữa B03/B05 và B02/B04
+      addBox(4, 0.14, 42, 62, 0.07, 40, asphaltMat);     // Đường nhánh giữa BA3/BA5 và BA2/BA4
+
+      // --- 4) Đường dẫn từ cổng chính bên phải vào ---
+      addBox(28, 0.15, 12, 102, 0.075, 0, asphaltMat);   // Đường qua cổng chính (x: 88..116)
+      addBox(5.5, 0.15, 30, 88, 0.075, 0, asphaltMat);   // Nhánh nối hai đường ngang ngay sau cổng
+      addBox(5.5, 0.15, 30, 100, 0.075, 0, asphaltMat);  // Làn quay đầu / vỉa hè nội bộ sau cổng
+      addBox(28, 0.24, 4.5, 102, 0.12, -8.5, sidewalkMat);
+      addBox(28, 0.24, 4.5, 102, 0.12, 8.5, sidewalkMat);
+
+      // --- 5) Khu vực trung tâm: Bùng binh (trái) + Công viên tròn (giữa) + Sân đất/cỏ (phải) ---
+      // Sân trống bên phải gần cổng (giữa B và BA)
+      addBox(56, 0.18, 16.5, 55, 0.09, 0, lawnMat);
+      addBox(44, 0.2, 12.5, 55, 0.1, 0, sandFieldMat);
+
+      // Công viên trung tâm (giữa D và C) có vòng tròn & lối đi chữ thập như ảnh
+      addBox(64, 0.18, 17, -14, 0.09, 0, lawnMat);
+      addBox(64, 0.2, 2.2, -14, 0.1, 0, brickMat);
+      addBox(2.2, 0.2, 17, -14, 0.1, 0, brickMat);
+      const centerRing = new THREE.Mesh(new THREE.RingGeometry(5.2, 6.8, 32), brickMat);
+      centerRing.rotation.x = -Math.PI / 2;
+      centerRing.position.set(-14, 0.12, 0);
+      centerRing.receiveShadow = true;
+      group.add(centerRing);
+      const centerSpot = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.24, 24), sidewalkMat);
+      centerSpot.position.set(-14, 0.12, 0);
+      group.add(centerSpot);
+
+      // Bùng binh bán nguyệt bên trái (trước E02-E03)
+      const roundaboutRoad = new THREE.Mesh(new THREE.RingGeometry(7.2, 13.5, 40), asphaltMat);
+      roundaboutRoad.rotation.x = -Math.PI / 2;
+      roundaboutRoad.position.set(-64, 0.08, 0);
+      roundaboutRoad.receiveShadow = true;
+      group.add(roundaboutRoad);
+
+      const roundaboutBorder = new THREE.Mesh(new THREE.CylinderGeometry(7.4, 7.4, 0.24, 32), sidewalkMat);
+      roundaboutBorder.position.set(-64, 0.12, 0);
+      group.add(roundaboutBorder);
+
+      const roundaboutGrass = new THREE.Mesh(new THREE.CylinderGeometry(6.7, 6.7, 0.28, 32), lawnMat);
+      roundaboutGrass.position.set(-64, 0.14, 0);
+      group.add(roundaboutGrass);
+
+      // Đường nối từ bùng binh tới trước mặt E02-E03
+      addBox(24, 0.15, 11, -83, 0.075, 0, asphaltMat);
+      // Đường vòng nối E04 & E01 với đường biên trái
+      addBox(12, 0.14, 140, -104, 0.07, 0, asphaltMat);
+
+      // --- 6) Sân thể thao & lối đi lát gạch nội khu ---
+      addBox(18, 0.19, 10, 43, 0.095, 41, courtMat);   // Sân thể thao màu cam giữa BA3 & BA5
+      addBox(12, 0.19, 12, -19, 0.095, 54, courtMat);  // Sân giữa C05 & C06
+      addBox(12, 0.19, 12, -19, 0.095, -54, courtMat); // Sân giữa D05 & D06
+
+      // Lối đi lát gạch quanh các cụm tòa
+      [
+        [68, 4, 62, -17.5], [68, 4, 62, 17.5],
+        [56, 4, -15, -17.5], [56, 4, -15, 17.5],
+        [24, 4, 43, -41], [16, 4, 82, -41], [16, 4, 82, 41],
+        [4, 24, -19, -39], [4, 24, -19, 39]
+      ].forEach(([w, d, x, z]) => addBox(w, 0.18, d, x, 0.09, z, brickMat));
+
+      // Vạch kẻ đường chính
+      for (let x = 88; x <= 110; x += 4.5) addBox(2.2, 0.02, 0.35, x, 0.16, 0, stripeMat);
+      for (let x = -40; x <= 90; x += 6) {
+        addBox(2.5, 0.02, 0.3, x, 0.16, -12, stripeMat);
+        addBox(2.5, 0.02, 0.3, x, 0.16, 12, stripeMat);
+      }
+
+      scene.add(group);
+    }
+
+    /* =========================================================================
+       CỔNG KÝ TÚC XÁ (ĐẶT TẠI LỐI VÀO BÊN PHẢI x = +106, z = 0, XOAY HƯỚNG VÀO TRONG)
+    ========================================================================= */
+    function createGate() {
+      const gateGroup = new THREE.Group();
+      gateGroup.position.set(106, 0, 0);
+      gateGroup.rotation.y = -Math.PI / 2; // Quay vuông góc với trục đường Đông-Tây ở lối vào bên phải
+
+      const blueMat = new THREE.MeshStandardMaterial({ color: '#1f5fd1', metalness: 0.3, roughness: 0.4 });
+      const whiteMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.8, metalness: 0.05 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: '#0f172a', metalness: 0.65, roughness: 0.15 });
+      const blackFenceMat = new THREE.MeshStandardMaterial({ color: '#1e293b', metalness: 0.4, roughness: 0.5 });
+
+      // Dầm mái ngang 24 x 0.6 x 2
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(24, 0.6, 2), blueMat);
+      beam.position.set(0, 5.2, 0);
+      beam.castShadow = true;
+      beam.receiveShadow = true;
+      gateGroup.add(beam);
+
+      // Cánh xanh bên TRÁI
+      const wingShape = new THREE.Shape();
+      wingShape.moveTo(-12.8, 0.1);
+      wingShape.lineTo(-10.8, 0.1);
+      wingShape.lineTo(-14.2, 10.6);
+      wingShape.lineTo(-15.3, 10.8);
+      wingShape.lineTo(-12.8, 0.1);
+
+      const wingGeo = new THREE.ExtrudeGeometry(wingShape, {
+        depth: 0.65, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 2
+      });
+      wingGeo.translate(0, 0, -0.325);
+      const leftWing = new THREE.Mesh(wingGeo, blueMat);
+      leftWing.castShadow = true;
+      gateGroup.add(leftWing);
+
+      const connectorShape = new THREE.Shape();
+      connectorShape.moveTo(-12.2, 4.9);
+      connectorShape.lineTo(-10.2, 4.9);
+      connectorShape.lineTo(-12.4, 2.5);
+      connectorShape.lineTo(-13.3, 2.8);
+      connectorShape.closePath();
+
+      const connGeo = new THREE.ExtrudeGeometry(connectorShape, { depth: 0.55, bevelEnabled: false });
+      connGeo.translate(0, 0, -0.275);
+      const wingConnector = new THREE.Mesh(connGeo, blueMat);
+      wingConnector.castShadow = true;
+      gateGroup.add(wingConnector);
+
+      // Trụ trái dạng nêm xiên
+      const leftPierShape = new THREE.Shape();
+      leftPierShape.moveTo(-11.8, 0);
+      leftPierShape.lineTo(-8.8, 0);
+      leftPierShape.lineTo(-9.4, 4.9);
+      leftPierShape.lineTo(-11.4, 4.9);
+      leftPierShape.closePath();
+
+      const leftPierGeo = new THREE.ExtrudeGeometry(leftPierShape, { depth: 2.2, bevelEnabled: false });
+      leftPierGeo.translate(0, 0, -1.1);
+      const leftPier = new THREE.Mesh(leftPierGeo, whiteMat);
+      leftPier.castShadow = true;
+      leftPier.receiveShadow = true;
+      gateGroup.add(leftPier);
+
+      const stripeGeo = new THREE.BoxGeometry(0.45, 4.6, 0.12);
+      [-1.12, 1.12].forEach((zOff) => {
+        const stripe = new THREE.Mesh(stripeGeo, blueMat);
+        stripe.position.set(-10.35, 2.5, zOff);
+        stripe.rotation.z = 0.14;
+        gateGroup.add(stripe);
+
+        const smallWin = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.1), glassMat);
+        smallWin.position.set(-10.2, 1.05, zOff);
+        gateGroup.add(smallWin);
+      });
+
+      // Trụ phải (chòi bảo vệ)
+      const guardhouse = new THREE.Mesh(new THREE.BoxGeometry(3.4, 4.9, 3.2), whiteMat);
+      guardhouse.position.set(10.2, 2.45, 0);
+      guardhouse.castShadow = true;
+      guardhouse.receiveShadow = true;
+      gateGroup.add(guardhouse);
+
+      [-1.62, 1.62].forEach((zOff) => {
+        const win = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.45, 0.12), glassMat);
+        win.position.set(10.2, 2.85, zOff);
+        gateGroup.add(win);
+      });
+      const sideWin = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.45, 1.8), glassMat);
+      sideWin.position.set(8.48, 2.85, 0);
+      gateGroup.add(sideWin);
+
+      // Hàng rào thấp màu đen hai bên lối xe
+      const createLowFence = (startX, width) => {
+        const fGroup = new THREE.Group();
+        const topBar = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, 0.08), blackFenceMat);
+        topBar.position.set(startX, 0.85, 0);
+        const botBar = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, 0.08), blackFenceMat);
+        botBar.position.set(startX, 0.25, 0);
+        fGroup.add(topBar, botBar);
+        const barsCount = Math.max(3, Math.floor(width / 0.45));
+        for (let i = 0; i <= barsCount; i++) {
+          const bx = startX - width / 2 + (i * width) / barsCount;
+          const post = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.9, 0.07), blackFenceMat);
+          post.position.set(bx, 0.45, 0);
+          fGroup.add(post);
+        }
+        return fGroup;
+      };
+      gateGroup.add(createLowFence(-6.6, 3.4));
+      gateGroup.add(createLowFence(6.4, 3.4));
+
+      // Biển hiệu nâu đỏ nằm ngang
+      const signCanvas = document.createElement('canvas');
+      signCanvas.width = 512; signCanvas.height = 96;
+      const sCtx = signCanvas.getContext('2d');
+      sCtx.fillStyle = '#7f1d1d';
+      sCtx.fillRect(0, 0, 512, 96);
+      sCtx.strokeStyle = '#fde047';
+      sCtx.lineWidth = 6;
+      sCtx.strokeRect(4, 4, 504, 88);
+      sCtx.fillStyle = '#fef9c3';
+      sCtx.font = 'bold 30px sans-serif';
+      sCtx.textAlign = 'center';
+      sCtx.textBaseline = 'middle';
+      sCtx.fillText('KÝ TÚC XÁ KHU B - ĐHQG TP.HCM', 256, 48);
+
+      const signTex = new THREE.CanvasTexture(signCanvas);
+      signTex.colorSpace = THREE.SRGBColorSpace;
+      const signBoard = new THREE.Mesh(
+        new THREE.BoxGeometry(6.8, 1.0, 0.18),
+        new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.5 })
+      );
+      signBoard.position.set(0, 5.2, -1.08);
+      gateGroup.add(signBoard);
+
+      // Băng rôn cam đỏ
+      const banner = new THREE.Mesh(
+        new THREE.BoxGeometry(3.4, 0.65, 0.1),
+        new THREE.MeshStandardMaterial({ color: '#ea580c', roughness: 0.65 })
+      );
+      banner.position.set(-6.6, 1.35, -0.1);
+      gateGroup.add(banner);
+
+      // Vạch kẻ đường trắng trước cổng
+      const zebraMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.75 });
+      for (let x = -7.2; x <= 7.2; x += 1.6) {
+        const strip = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.03, 3.2), zebraMat);
+        strip.position.set(x, 0.16, -4.5);
+        gateGroup.add(strip);
+      }
+
+      scene.add(gateGroup);
+    }
+
+    /* =========================================================================
+       6. TẠO TÒA NHÀ ĐÚNG HÌNH DẠNG THỰC TẾ (CHỮ NHẬT, CHỮ L, CHỮ Y, CỤM ĐÔI E02-E03)
+    ========================================================================= */
+    const buildingGroups = [];
+    const buildingGroupById = new Map();
+    const buildingHitTargets = [];
+    const labelMap = new Map();
+    const pinMap = new Map();
+
+    function createBuildingMesh(data) {
+      const [w, d, h] = data.size;
+      const [x, z] = data.position;
+      const shapeType = data.shapeType || 'box';
+
+      const group = new THREE.Group();
+      group.position.set(x, 0, z);
+      group.rotation.y = data.rotationY || 0;
+
+      const facadeMat = createBuildingFacade(data);
+      const roofTopMat = new THREE.MeshStandardMaterial({ color: data.roofColor, roughness: 0.7, metalness: 0.1 });
+      const concreteMat = new THREE.MeshStandardMaterial({ color: '#cbd5e1', roughness: 0.85 });
+      const tankMat = new THREE.MeshStandardMaterial({ color: '#94a3b8', metalness: 0.75, roughness: 0.25 });
+
+      const detailGroup = new THREE.Group();
+      const clickableMeshes = [];
+      const wireframeMats = [];
+
+      // Hàm phụ tạo 1 khối cánh nhà có viền, sảnh trệt & chi tiết mái
+      const addWingBlock = (bw, bd, bh, ox, oz, rotY = 0, addRoofDetails = true) => {
+        const wing = new THREE.Group();
+        wing.position.set(ox, 0, oz);
+        wing.rotation.y = rotY;
+
+        const bodyGeo = new THREE.BoxGeometry(bw, bh, bd);
+        const bodyMesh = new THREE.Mesh(bodyGeo, [facadeMat, facadeMat, roofTopMat, concreteMat, facadeMat, facadeMat]);
+        bodyMesh.position.y = bh / 2;
+        bodyMesh.castShadow = true;
+        bodyMesh.receiveShadow = true;
+        wing.add(bodyMesh);
+        clickableMeshes.push(bodyMesh);
+
+        const edges = new THREE.EdgesGeometry(bodyGeo);
+        const lineMat = new THREE.LineBasicMaterial({ color: '#1e293b', transparent: true, opacity: 0.28 });
+        bodyMesh.add(new THREE.LineSegments(edges, lineMat));
+        wireframeMats.push(lineMat);
+
+        const podium = new THREE.Mesh(new THREE.BoxGeometry(bw + 0.7, 2.0, bd + 0.7), concreteMat);
+        podium.position.y = 1.0;
+        podium.castShadow = true;
+        podium.receiveShadow = true;
+        wing.add(podium);
+        clickableMeshes.push(podium);
+
+        // Ban công tầng (ẩn/hiện theo Chi tiết cao)
+        for (let fy = 5.5; fy < bh - 2; fy += 3.8) {
+          const balcony = new THREE.Mesh(new THREE.BoxGeometry(bw + 0.32, 0.2, bd + 0.32), concreteMat);
+          balcony.position.y = fy;
+          balcony.position.x = ox;
+          balcony.position.z = oz;
+          balcony.rotation.y = rotY;
+          detailGroup.add(balcony);
+        }
+
+        if (addRoofDetails) {
+          const techBox = new THREE.Mesh(
+            new THREE.BoxGeometry(Math.min(bw, bd) * 0.42, 2.2, Math.min(bw, bd) * 0.42),
+            roofTopMat
+          );
+          techBox.position.set(ox, bh + 1.1, oz);
+          techBox.rotation.y = rotY;
+          techBox.castShadow = true;
+          detailGroup.add(techBox);
+          clickableMeshes.push(techBox);
+
+          const tankGeo = new THREE.CylinderGeometry(0.55, 0.55, 1.4, 10);
+          [[-bw * 0.22, -bd * 0.22], [bw * 0.22, bd * 0.22]].forEach(([tx, tz]) => {
+            const tank = new THREE.Mesh(tankGeo, tankMat);
+            const cosR = Math.cos(rotY);
+            const sinR = Math.sin(rotY);
+            tank.position.set(ox + tx * cosR + tz * sinR, bh + 0.8, oz - tx * sinR + tz * cosR);
+            tank.castShadow = true;
+            detailGroup.add(tank);
+          });
+        }
+
+        group.add(wing);
+      };
+
+      if (shapeType === 'box') {
+        addWingBlock(w, d, h, 0, 0, 0, true);
+        // Sảnh & bậc thềm hướng về mặt đường trung tâm
+        const frontDir = z < 0 ? 1 : -1;
+        const canopy = new THREE.Mesh(new THREE.BoxGeometry(w * 0.42, 0.35, 1.6), roofTopMat);
+        canopy.position.set(0, 2.6, frontDir * (d / 2 + 0.7));
+        const step = new THREE.Mesh(new THREE.BoxGeometry(w * 0.38, 0.3, 1.2), concreteMat);
+        step.position.set(0, 0.15, frontDir * (d / 2 + 0.8));
+        group.add(canopy, step);
+        clickableMeshes.push(canopy);
+      } else if (shapeType === 'l-left') {
+        // Cánh dọc bên phải + cánh ngang chìa sang trái (D05, C06)
+        addWingBlock(7.5, 17, h, 4.5, 0, 0, true);
+        addWingBlock(10.5, 7.5, h * 0.94, -3.8, -1.5, 0, false);
+      } else if (shapeType === 'l-right') {
+        // Cánh dọc bên trái + cánh ngang chìa sang phải (D06, C05)
+        addWingBlock(7.5, 17, h, -4.5, 0, 0, true);
+        addWingBlock(10.5, 7.5, h * 0.94, 3.8, -1.5, 0, false);
+      } else if (shapeType === 'y-shape') {
+        // Tòa chữ Y 3 nhánh (E01, E04)
+        addWingBlock(7, 7, h, 0, 0, 0, true);
+        const angles = data.wingAngles || [1.22, -0.35, -2.44];
+        angles.forEach((ang) => {
+          const armLen = 9.5;
+          const cx = Math.cos(ang) * (armLen * 0.55);
+          const cz = Math.sin(ang) * (armLen * 0.55);
+          addWingBlock(armLen, 6.2, h, cx, cz, -ang, false);
+        });
+      } else if (shapeType === 'fork-north') {
+        // Nửa trên tòa đôi chữ Y phía Tây bùng binh (E03)
+        addWingBlock(7.2, 12.5, h, 0, 4.8, 0, true);
+        addWingBlock(9.5, 6.2, h, -4.2, -4.8, -0.68, false);
+        addWingBlock(9.5, 6.2, h, 4.2, -4.8, 0.68, false);
+      } else if (shapeType === 'fork-south') {
+        // Nửa dưới tòa đôi chữ Y phía Tây bùng binh (E02)
+        addWingBlock(7.2, 12.5, h, 0, -4.8, 0, true);
+        addWingBlock(9.5, 6.2, h, -4.2, 4.8, 0.68, false);
+        addWingBlock(9.5, 6.2, h, 4.2, 4.8, -0.68, false);
+      }
+
+      group.add(detailGroup);
+      highDetailObjects.push(detailGroup);
+
+      const highlightMats = [facadeMat, roofTopMat, concreteMat, tankMat];
+      group.userData = { building: data, highlightMats, wireframeMats };
+
+      clickableMeshes.forEach((m) => {
+        m.userData.buildingGroup = group;
+        buildingHitTargets.push(m);
+      });
+
+      scene.add(group);
+      buildingGroups.push(group);
+      buildingGroupById.set(data.id, group);
+      return group;
+    }
+
+    function createBuildingLabel(data, group) {
+      const [, , h] = data.size;
+      const div = document.createElement('div');
+      div.className = 'building-label';
+      div.textContent = data.id;
+
+      const labelObj = new CSS2DObject(div);
+      labelObj.position.set(0, h + 4.0, 0);
+      group.add(labelObj);
+      labelMap.set(data.id, div);
+
+      const pinEl = document.createElement('div');
+      pinEl.className = 'food-pin hidden';
+      const pinObj = new CSS2DObject(pinEl);
+      pinObj.position.set(0, h + 9.2, 0);
+      group.add(pinObj);
+      pinMap.set(data.id, { obj: pinObj, el: pinEl });
+
+      return labelObj;
+    }
+
+    /* =========================================================================
+       7. MÔI TRƯỜNG InstancedMesh (CÂY, GHẾ, ĐÈN, XE MÁY, BỒN HOA) – ĐẶT SÁT VỈA HÈ MỚI
+    ========================================================================= */
+    const instancedRefs = [];
+
+    function createTree() {
+      const treeSpecs = [];
+      const addTree = (x, z, s = 1) => treeSpecs.push({ x, z, s });
+
+      // Cây dọc hai đường ngang trung tâm
+      for (let x = -40; x <= 96; x += 12) {
+        if (Math.abs(x - 22) > 4) {
+          addTree(x, -16.8, 0.95);
+          addTree(x, 16.8, 0.95);
+        }
+      }
+      // Cây trong công viên trung tâm & bùng binh
+      for (let x = -38; x <= 12; x += 12) {
+        if (Math.abs(x + 14) > 7) {
+          addTree(x, -4.8, 0.9);
+          addTree(x, 4.8, 0.9);
+        }
+      }
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        addTree(-64 + Math.cos(a) * 16, Math.sin(a) * 16, 1.0);
+      }
+      addTree(-64, 0, 1.25);
+
+      // Cây quanh đường biên & sân giữa các cụm nhà
+      [-64, -40, -18, 8, 30, 62, 102].forEach((x) => {
+        addTree(x, -64.5, 1.0);
+        addTree(x, 64.5, 1.0);
+      });
+      addTree(43, -41, 1.1);
+      addTree(-88, -32, 1.05);
+      addTree(-88, 32, 1.05);
+
+      const count = treeSpecs.length;
+      const trunkInst = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(0.28, 0.42, 2.8, 7),
+        new THREE.MeshStandardMaterial({ color: '#78350f', roughness: 0.9 }),
+        count
+      );
+      const crownGeo = new THREE.IcosahedronGeometry(1.85, 1);
+      const crownMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.85 });
+      const crown1Inst = new THREE.InstancedMesh(crownGeo, crownMat, count);
+      const crown2Inst = new THREE.InstancedMesh(crownGeo, crownMat, count);
+
+      [trunkInst, crown1Inst, crown2Inst].forEach((m) => {
+        m.castShadow = true;
+        m.receiveShadow = true;
+        m.frustumCulled = false;
+      });
+
+      const dummy = new THREE.Object3D();
+      const palette = [new THREE.Color('#22c55e'), new THREE.Color('#16a34a'), new THREE.Color('#15803d'), new THREE.Color('#4ade80')];
+
+      treeSpecs.forEach((t, i) => {
+        dummy.position.set(t.x, 1.4 * t.s, t.z);
+        dummy.rotation.set(0, i * 1.1, 0);
+        dummy.scale.setScalar(t.s);
+        dummy.updateMatrix();
+        trunkInst.setMatrixAt(i, dummy.matrix);
+
+        dummy.position.set(t.x, 3.6 * t.s, t.z);
+        dummy.scale.set(t.s, t.s * 0.95, t.s);
+        dummy.updateMatrix();
+        crown1Inst.setMatrixAt(i, dummy.matrix);
+
+        dummy.position.set(t.x + 0.5 * t.s, 4.6 * t.s, t.z - 0.3 * t.s);
+        dummy.scale.setScalar(t.s * 0.72);
+        dummy.updateMatrix();
+        crown2Inst.setMatrixAt(i, dummy.matrix);
+
+        crown1Inst.setColorAt(i, palette[i % palette.length]);
+        crown2Inst.setColorAt(i, palette[(i + 1) % palette.length]);
+      });
+
+      trunkInst.instanceMatrix.needsUpdate = true;
+      crown1Inst.instanceMatrix.needsUpdate = true;
+      crown2Inst.instanceMatrix.needsUpdate = true;
+      crown1Inst.instanceColor.needsUpdate = true;
+      crown2Inst.instanceColor.needsUpdate = true;
+
+      scene.add(trunkInst, crown1Inst, crown2Inst);
+      instancedRefs.push(
+        { mesh: trunkInst, fullCount: count, reducedCount: Math.ceil(count * 0.55) },
+        { mesh: crown1Inst, fullCount: count, reducedCount: Math.ceil(count * 0.55) },
+        { mesh: crown2Inst, fullCount: count, reducedCount: Math.ceil(count * 0.55) }
+      );
+    }
+
+    function createBench() {
+      const benches = [
+        [-22, -3.5, 0], [-6, -3.5, 0], [-22, 3.5, Math.PI], [-6, 3.5, Math.PI],
+        [36, -6.5, 0], [56, -6.5, 0], [36, 6.5, Math.PI], [56, 6.5, Math.PI],
+        [-58, -6, Math.PI / 4], [-58, 6, -Math.PI / 4],
+        [-19, -40, Math.PI / 2], [-19, 40, Math.PI / 2],
+        [82, -38, Math.PI / 2], [82, 38, Math.PI / 2]
+      ];
+      const tables = [[-19, -37], [-19, 37], [82, -41], [82, 41], [-83, -18], [-83, 18]];
+
+      const benchInst = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(2.2, 0.55, 0.75),
+        new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.75 }),
+        benches.length
+      );
+      const tableInst = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(0.95, 0.95, 0.85, 10),
+        new THREE.MeshStandardMaterial({ color: '#f59e0b', roughness: 0.6 }),
+        tables.length
+      );
+      benchInst.castShadow = tableInst.castShadow = true;
+      benchInst.frustumCulled = tableInst.frustumCulled = false;
+
+      const dummy = new THREE.Object3D();
+      benches.forEach(([x, z, rot], i) => {
+        dummy.position.set(x, 0.35, z);
+        dummy.rotation.set(0, rot, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        benchInst.setMatrixAt(i, dummy.matrix);
+      });
+      tables.forEach(([x, z], i) => {
+        dummy.position.set(x, 0.45, z);
+        dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix();
+        tableInst.setMatrixAt(i, dummy.matrix);
+      });
+
+      benchInst.instanceMatrix.needsUpdate = true;
+      tableInst.instanceMatrix.needsUpdate = true;
+      scene.add(benchInst, tableInst);
+      highDetailObjects.push(benchInst, tableInst);
+    }
+
+    function createLamp() {
+      const lamps = [];
+      for (let x = -42; x <= 96; x += 18) {
+        lamps.push([x, -8.5, Math.PI], [x, 8.5, 0]);
+      }
+      [-55, -25, 15, 45].forEach((z) => {
+        lamps.push([-46, z, Math.PI / 2], [25, z, -Math.PI / 2]);
+      });
+
+      const count = lamps.length;
+      const poleInst = new THREE.InstancedMesh(
+        new THREE.CylinderGeometry(0.12, 0.16, 6.0, 6),
+        new THREE.MeshStandardMaterial({ color: '#334155', metalness: 0.6, roughness: 0.4 }),
+        count
+      );
+      const bulbInst = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.85, 0.22, 0.4),
+        new THREE.MeshStandardMaterial({ color: '#fef08a', emissive: '#fde047', emissiveIntensity: 0.6 }),
+        count
+      );
+      poleInst.castShadow = true;
+      poleInst.frustumCulled = bulbInst.frustumCulled = false;
+
+      const dummy = new THREE.Object3D();
+      lamps.forEach(([x, z, rot], i) => {
+        dummy.position.set(x, 3.0, z);
+        dummy.rotation.set(0, rot, 0);
+        dummy.updateMatrix();
+        poleInst.setMatrixAt(i, dummy.matrix);
+
+        dummy.position.set(x + Math.sin(rot) * 0.42, 6.0, z + Math.cos(rot) * 0.42);
+        dummy.rotation.set(0, rot, 0);
+        dummy.updateMatrix();
+        bulbInst.setMatrixAt(i, dummy.matrix);
+      });
+
+      poleInst.instanceMatrix.needsUpdate = true;
+      bulbInst.instanceMatrix.needsUpdate = true;
+      scene.add(poleInst, bulbInst);
+      instancedRefs.push(
+        { mesh: poleInst, fullCount: count, reducedCount: Math.ceil(count * 0.5) },
+        { mesh: bulbInst, fullCount: count, reducedCount: Math.ceil(count * 0.5) }
+      );
+    }
+
+    function createBike() {
+      const bikes = [];
+      const addBikeRow = (startX, startZ, cols, rows, rotY) => {
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            bikes.push({ x: startX + c * 1.15, z: startZ + r * 2.1, rot: rotY });
+          }
+        }
+      };
+
+      addBikeRow(78, -42, 4, 2, Math.PI / 2); // Bãi xe gần B04 / B01
+      addBikeRow(38, -43, 5, 2, 0);           // Bãi xe giữa B03 & B05
+      addBikeRow(66, 40, 5, 2, 0);            // Bãi xe cụm BA
+      addBikeRow(-35, -39, 4, 2, 0);          // Bãi xe cụm D
+      addBikeRow(-35, 37, 4, 2, 0);           // Bãi xe cụm C
+      addBikeRow(-87, -20, 4, 1, 0);          // Bãi xe gần E03/E04
+      addBikeRow(-87, 19, 4, 1, 0);           // Bãi xe gần E01/E02
+
+      // Xe máy chạy trên trục đường
+      bikes.push(
+        { x: 96, z: -1.5, rot: -Math.PI / 2 },
+        { x: 64, z: -12, rot: Math.PI / 2 },
+        { x: -12, z: -12, rot: Math.PI / 2 },
+        { x: 28, z: 12, rot: -Math.PI / 2 },
+        { x: -49, z: 26, rot: 0 }
+      );
+
+      const count = bikes.length;
+      const bodyInst = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.55, 0.72, 1.5),
+        new THREE.MeshStandardMaterial({ color: '#ffffff', metalness: 0.4, roughness: 0.4 }),
+        count
+      );
+      const wheelGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.2, 8);
+      wheelGeo.rotateZ(Math.PI / 2);
+      const wheelInst = new THREE.InstancedMesh(
+        wheelGeo,
+        new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.85 }),
+        count * 2
+      );
+      bodyInst.castShadow = true;
+      bodyInst.frustumCulled = wheelInst.frustumCulled = false;
+
+      const dummy = new THREE.Object3D();
+      const colors = [new THREE.Color('#ef4444'), new THREE.Color('#0284c7'), new THREE.Color('#1e293b'), new THREE.Color('#f8fafc'), new THREE.Color('#10b981')];
+
+      bikes.forEach((b, i) => {
+        dummy.position.set(b.x, 0.56, b.z);
+        dummy.rotation.set(0, b.rot, 0);
+        dummy.updateMatrix();
+        bodyInst.setMatrixAt(i, dummy.matrix);
+        bodyInst.setColorAt(i, colors[i % colors.length]);
+
+        [-0.5, 0.5].forEach((wz, wi) => {
+          dummy.position.set(b.x + Math.sin(b.rot) * wz, 0.28, b.z + Math.cos(b.rot) * wz);
+          dummy.rotation.set(0, b.rot, 0);
+          dummy.updateMatrix();
+          wheelInst.setMatrixAt(i * 2 + wi, dummy.matrix);
+        });
+      });
+
+      bodyInst.instanceMatrix.needsUpdate = true;
+      bodyInst.instanceColor.needsUpdate = true;
+      wheelInst.instanceMatrix.needsUpdate = true;
+      scene.add(bodyInst, wheelInst);
+      highDetailObjects.push(bodyInst, wheelInst);
+    }
+
+    function createFlowerBeds() {
+      const spots = [];
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+        spots.push([-14 + Math.cos(a) * 4.5, Math.sin(a) * 4.5]);
+        spots.push([-64 + Math.cos(a) * 5.2, Math.sin(a) * 5.2]);
+      }
+      for (let x = -40; x <= 12; x += 8) {
+        spots.push([x, -7.2], [x, 7.2]);
+      }
+
+      const inst = new THREE.InstancedMesh(
+        new THREE.DodecahedronGeometry(0.45, 0),
+        new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.85 }),
+        spots.length
+      );
+      inst.frustumCulled = false;
+
+      const dummy = new THREE.Object3D();
+      const flowerColors = [new THREE.Color('#f43f5e'), new THREE.Color('#facc15'), new THREE.Color('#fb923c'), new THREE.Color('#ec4899')];
+
+      spots.forEach(([x, z], i) => {
+        dummy.position.set(x, 0.38, z);
+        dummy.rotation.set(i, i * 0.5, 0);
+        dummy.scale.set(1.2, 0.75, 1.2);
+        dummy.updateMatrix();
+        inst.setMatrixAt(i, dummy.matrix);
+        inst.setColorAt(i, flowerColors[i % flowerColors.length]);
+      });
+
+      inst.instanceMatrix.needsUpdate = true;
+      inst.instanceColor.needsUpdate = true;
+      scene.add(inst);
+      highDetailObjects.push(inst);
+    }
+
+    /* =========================================================================
+       8. HIGHLIGHT TÒA NHÀ, GHIM NỔI & BAY CAMERA MƯỢT
+    ========================================================================= */
+    const state = {
+      viewMode: 'list',
+      searchQuery: '',
+      selectedCategory: 'Tất cả',
+      selectedFoodId: null,
+      selectedBuildingId: null,
+      highlightedIds: new Set(),
+      hoveredBuildingId: null
+    };
+
+    let cameraTween = null;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function startCameraTween(toPos, toTarget, duration = 950) {
+      cameraTween = {
+        startTime: performance.now(),
+        duration,
+        fromPos: camera.position.clone(),
+        toPos: toPos.clone(),
+        fromTarget: controls.target.clone(),
+        toTarget: toTarget.clone()
+      };
+    }
+
+    function flyToBuilding(buildingId) {
+      const group = buildingGroupById.get(buildingId);
+      if (!group) return;
+
+      const [bx, bz] = group.userData.building.position;
+      const [, , bh] = group.userData.building.size;
+
+      const target = new THREE.Vector3(bx, bh * 0.38, bz);
+      const camPos = new THREE.Vector3(bx + (bx >= 0 ? -18 : 18), bh + 28, bz + 44);
+      startCameraTween(camPos, target, 950);
+    }
+
+    function fitBuildingsInView(buildingIds) {
+      if (!buildingIds || buildingIds.length === 0) {
+        startCameraTween(DEFAULT_CAMERA_POS, DEFAULT_TARGET, 950);
+        return;
+      }
+      if (buildingIds.length === 1) {
+        flyToBuilding(buildingIds[0]);
+        return;
+      }
+
+      const box = new THREE.Box3();
+      buildingIds.forEach((id) => {
+        const g = buildingGroupById.get(id);
+        if (g) box.expandByObject(g);
+      });
+
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const span = Math.max(size.x, size.z, 45);
+      const camPos = new THREE.Vector3(
+        center.x,
+        Math.min(180, span * 0.72 + 38),
+        center.z + Math.min(200, span * 0.85 + 52)
+      );
+      const target = new THREE.Vector3(center.x, 4, center.z);
+      startCameraTween(camPos, target, 1000);
+    }
+
+    function applyBuildingVisuals() {
+      const hasHighlightFilter = state.highlightedIds.size > 0;
+
+      buildingGroups.forEach((group) => {
+        const { building, highlightMats, wireframeMats } = group.userData;
+        const id = building.id;
+        const labelEl = labelMap.get(id);
+
+        const isSelected = state.selectedBuildingId === id;
+        const isHighlighted = state.highlightedIds.has(id);
+        const isHovered = state.hoveredBuildingId === id;
+
+        if (labelEl) labelEl.classList.remove('hovered', 'selected', 'highlighted', 'dimmed');
+
+        if (isSelected) {
+          highlightMats.forEach((m) => {
+            m.transparent = false; m.opacity = 1;
+            m.emissive.setHex(0xf59e0b); m.emissiveIntensity = 0.25;
+          });
+          wireframeMats.forEach((wm) => { wm.opacity = 1; });
+          if (labelEl) labelEl.classList.add('selected');
+        } else if (isHighlighted) {
+          highlightMats.forEach((m) => {
+            m.transparent = false; m.opacity = 1;
+            m.emissive.setHex(0x10b981); m.emissiveIntensity = isHovered ? 0.35 : 0.2;
+          });
+          wireframeMats.forEach((wm) => { wm.opacity = 0.85; });
+          if (labelEl) labelEl.classList.add('highlighted');
+        } else if (hasHighlightFilter) {
+          highlightMats.forEach((m) => {
+            m.transparent = true; m.opacity = isHovered ? 0.55 : 0.24;
+            m.emissive.setHex(isHovered ? 0x38bdf8 : 0x000000); m.emissiveIntensity = isHovered ? 0.25 : 0;
+          });
+          wireframeMats.forEach((wm) => { wm.opacity = 0.08; });
+          if (labelEl) labelEl.classList.add('dimmed');
+        } else {
+          highlightMats.forEach((m) => {
+            m.transparent = false; m.opacity = 1;
+            m.emissive.setHex(isHovered ? 0x38bdf8 : 0x000000); m.emissiveIntensity = isHovered ? 0.22 : 0;
+          });
+          wireframeMats.forEach((wm) => { wm.opacity = isHovered ? 0.8 : 0.28; });
+          if (isHovered && labelEl) labelEl.classList.add('hovered');
+        }
+      });
+    }
+
+    function highlightBuildings(buildingIds = [], pinIcon = '📍') {
+      state.highlightedIds = new Set(buildingIds);
+      pinMap.forEach(({ el }, bId) => {
+        if (state.highlightedIds.has(bId)) {
+          el.textContent = `📍 ${pinIcon}`;
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+      applyBuildingVisuals();
+    }
+
+    function resetHighlight() {
+      state.highlightedIds.clear();
+      state.selectedBuildingId = null;
+      pinMap.forEach(({ el }) => el.classList.add('hidden'));
+      applyBuildingVisuals();
+    }
+
+    /* =========================================================================
+       9. GIAO DIỆN PANEL ĐỒ ĂN, BÌNH LUẬN THEO SAO, XÓA & HOÀN TÁC
+    ========================================================================= */
+    const panelBody = document.getElementById('panel-body');
+    const searchControls = document.getElementById('search-controls');
+    const searchInput = document.getElementById('food-search-input');
+    const categoryFiltersEl = document.getElementById('category-filters');
+    const btnClearSelection = document.getElementById('btn-clear-selection');
+
+    function getFoodBestRating(food) {
+      let bestAvg = 0;
+      let totalCount = 0;
+      food.spots.forEach((sp) => {
+        const { average, count } = ratingService.getAverage(sp.id);
+        totalCount += count;
+        if (average > bestAvg) bestAvg = average;
+      });
+      return { bestAvg, totalCount };
+    }
+
+    function weightedScore(r) {
+      return r.count === 0 ? 0 : (r.average * r.count + 3.5 * 3) / (r.count + 3);
+    }
+
+    function renderCategoryFilters() {
+      const categories = ['Tất cả', ...new Set(FOODS_DATA.foods.map((f) => f.category))];
+      categoryFiltersEl.innerHTML = '';
+      categories.forEach((cat) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip-btn' + (state.selectedCategory === cat ? ' active' : '');
+        btn.textContent = cat;
+        btn.addEventListener('click', () => {
+          state.selectedCategory = cat;
+          renderCategoryFilters();
+          renderFoodList();
+        });
+        categoryFiltersEl.appendChild(btn);
+      });
+    }
+
+    function renderFoodList() {
+      state.viewMode = 'list';
+      searchControls.classList.remove('hidden');
+      btnClearSelection.classList.add('hidden');
+      panelBody.innerHTML = '';
+
+      const query = normalizeVietnamese(state.searchQuery);
+      const filtered = FOODS_DATA.foods.filter((food) => {
+        const matchCat = state.selectedCategory === 'Tất cả' || food.category === state.selectedCategory;
+        const matchName = !query
+          || normalizeVietnamese(food.name).includes(query)
+          || normalizeVietnamese(food.category).includes(query)
+          || food.spots.some((s) => normalizeVietnamese(s.shopName).includes(query) || normalizeVietnamese(s.buildingId).includes(query));
+        return matchCat && matchName;
+      });
+
+      if (filtered.length === 0) {
+        panelBody.innerHTML = '<div class="empty-state">Không tìm thấy món ăn phù hợp.</div>';
+        return;
+      }
+
+      filtered.forEach((food) => {
+        const { bestAvg, totalCount } = getFoodBestRating(food);
+        const buildingCount = new Set(food.spots.map((s) => s.buildingId)).size;
+
+        const card = document.createElement('div');
+        card.className = 'food-card';
+        card.innerHTML = `
+          <div class="food-icon">${escapeHtml(food.icon)}</div>
+          <div class="food-card-info">
+            <div class="food-card-title">
+              <span>${escapeHtml(food.name)}</span>
+              <span style="font-size:11px; color:#38bdf8; font-weight:600;">${escapeHtml(food.category)}</span>
+            </div>
+            <div class="food-card-meta">
+              <span>${buildingCount} tòa đang bán</span>
+              <span>${bestAvg > 0 ? `★ ${bestAvg.toFixed(1)} (${totalCount})` : 'Chưa có đánh giá'}</span>
+            </div>
+          </div>
+        `;
+        card.setAttribute('role', 'button');
+        card.tabIndex = 0;
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectFood(food.id); }
+        });
+        card.addEventListener('click', () => selectFood(food.id));
+        panelBody.appendChild(card);
+      });
+    }
+
+    const reviewUIState = new Map();
+    const commentDrafts = new Map();
+    let activeMobileSpot = null;
+    let undoToastTimer = null;
+
+    function getSpotReviewState(spotId) {
+      if (!reviewUIState.has(spotId)) {
+        reviewUIState.set(spotId, { open: false, activeStar: 'all', page: 1 });
+      }
+      return reviewUIState.get(spotId);
+    }
+
+    function formatRelativeTime(ts) {
+      if (!ts) return '';
+      const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+      if (diffSec < 60) return 'Vừa xong';
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin} phút trước`;
+      const diffHour = Math.floor(diffMin / 60);
+      if (diffHour < 24) return `${diffHour} giờ trước`;
+      const diffDay = Math.floor(diffHour / 24);
+      if (diffDay < 30) return `${diffDay} ngày trước`;
+      return new Date(ts).toLocaleDateString('vi-VN');
+    }
+
+    function refreshCurrentView() {
+      const prevScroll = panelBody.scrollTop;
+      if (state.viewMode === 'foodDetail' && state.selectedFoodId) {
+        renderFoodDetail(state.selectedFoodId);
+      } else if (state.viewMode === 'buildingDetail' && state.selectedBuildingId) {
+        renderBuildingFoods(state.selectedBuildingId);
+      } else {
+        renderFoodList();
+      }
+      if (activeMobileSpot) {
+        const body = document.getElementById('mobile-reviews-body');
+        if (body) renderReviewsAreaContent(body, activeMobileSpot);
+      }
+      panelBody.scrollTop = prevScroll;
+    }
+
+    function showDeleteConfirmModal(onConfirm, message) {
+      const modal = document.getElementById('confirm-delete-modal');
+      const btnCancel = document.getElementById('btn-cancel-delete');
+      const btnConfirm = document.getElementById('btn-confirm-delete');
+
+      modal.classList.remove('hidden');
+      modal.querySelector('p').textContent = message || 'Bạn có chắc muốn xóa đánh giá này?';
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        btnCancel.onclick = null;
+        btnConfirm.onclick = null;
+        modal.onclick = null;
+      };
+      btnCancel.onclick = cleanup;
+      modal.onclick = (e) => { if (e.target === modal) cleanup(); };
+      btnConfirm.onclick = () => { cleanup(); onConfirm(); };
+    }
+
+    function showNoticeToast(message, undoPayload = null) {
+      const toast = document.getElementById('undo-toast');
+      const textEl = document.getElementById('undo-toast-text');
+      const undoBtn = document.getElementById('btn-undo-delete');
+      if (undoToastTimer) clearTimeout(undoToastTimer);
+      textEl.textContent = message;
+
+      if (undoPayload) {
+        undoBtn.classList.remove('hidden');
+        undoBtn.onclick = () => {
+          clearTimeout(undoToastTimer);
+          toast.classList.add('hidden');
+          const res = ratingService.restoreRating(undoPayload.spotId, undoPayload.rating);
+          if (res.success) refreshCurrentView();
+        };
+      } else {
+        undoBtn.classList.add('hidden');
+        undoBtn.onclick = null;
+      }
+      toast.classList.remove('hidden');
+      undoToastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+        undoBtn.onclick = null;
+      }, 5000);
+    }
+
+    function handleDeleteSpotRating(spotId) {
+      showDeleteConfirmModal(() => {
+        const res = ratingService.deleteRating(spotId);
+        if (!res.success) {
+          if (res.error) showNoticeToast(res.error);
+          return;
+        }
+        refreshCurrentView();
+        showNoticeToast('Đã xóa đánh giá', { spotId, rating: res.removed });
+      });
+    }
+
+    function renderReviewsAreaContent(containerEl, spot, onRequestEdit) {
+      containerEl.innerHTML = '';
+      const ui = getSpotReviewState(spot.id);
+      const dist = ratingService.getDistribution(spot.id);
+      const avgInfo = ratingService.getAverage(spot.id);
+      const currentUid = ratingService.getUserId();
+
+      const summary = document.createElement('div');
+      summary.className = 'dist-summary';
+      const scoreBox = document.createElement('div');
+      scoreBox.className = 'dist-score-box';
+      scoreBox.innerHTML = avgInfo.count > 0
+        ? `<div class="dist-score-big">${avgInfo.average.toFixed(1)} ★</div><div class="dist-score-count">${avgInfo.count} đánh giá</div>`
+        : `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">Chưa có</div><div class="dist-score-count">0 đánh giá</div>`;
+
+      const barsWrap = document.createElement('div');
+      barsWrap.className = 'dist-bars';
+      [5, 4, 3, 2, 1].forEach((starLevel) => {
+        const count = dist[starLevel];
+        const pct = dist.total > 0 ? Math.round((count / dist.total) * 100) : 0;
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'dist-bar-row';
+        row.innerHTML = `<span class="dist-bar-label">${starLevel}★</span><span class="dist-bar-track"><span class="dist-bar-fill" style="width:${pct}%"></span></span><span class="dist-bar-num">${count}</span>`;
+        row.addEventListener('click', () => {
+          ui.activeStar = starLevel;
+          ui.page = 1;
+          renderReviewsAreaContent(containerEl, spot, onRequestEdit);
+        });
+        barsWrap.appendChild(row);
+      });
+      summary.appendChild(scoreBox);
+      summary.appendChild(barsWrap);
+      containerEl.appendChild(summary);
+
+      const tabsBar = document.createElement('div');
+      tabsBar.className = 'star-tabs';
+      [
+        { key: 'all', label: `Tất cả (${dist.total})` },
+        { key: 5, label: `5★ (${dist[5]})` },
+        { key: 4, label: `4★ (${dist[4]})` },
+        { key: 3, label: `3★ (${dist[3]})` },
+        { key: 2, label: `2★ (${dist[2]})` },
+        { key: 1, label: `1★ (${dist[1]})` }
+      ].forEach(({ key, label }) => {
+        const tabBtn = document.createElement('button');
+        tabBtn.type = 'button';
+        tabBtn.className = 'star-tab-btn' + (ui.activeStar === key ? ' active' : '');
+        tabBtn.textContent = label;
+        tabBtn.addEventListener('click', () => {
+          ui.activeStar = key;
+          ui.page = 1;
+          renderReviewsAreaContent(containerEl, spot, onRequestEdit);
+        });
+        tabsBar.appendChild(tabBtn);
+      });
+      containerEl.appendChild(tabsBar);
+
+      const { items, hasMore } = ratingService.getRatingsByStar(spot.id, ui.activeStar, ui.page, 5);
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = ui.activeStar === 'all' ? 'Chưa có đánh giá nào' : `Chưa có đánh giá ${ui.activeStar} sao`;
+        containerEl.appendChild(empty);
+        return;
+      }
+
+      const listEl = document.createElement('div');
+      listEl.className = 'reviews-list';
+      items.forEach((rev) => {
+        const isMine = rev.userId === currentUid;
+        const item = document.createElement('div');
+        item.className = 'review-item';
+        item.innerHTML = `
+          <div class="review-head">
+            <div><span class="review-stars">${'★'.repeat(rev.stars)}${'☆'.repeat(5 - rev.stars)}</span>${isMine ? '<span class="review-author-badge">Đánh giá của bạn</span>' : ''}</div>
+            <span class="review-time">${escapeHtml(formatRelativeTime(rev.updatedAt))}</span>
+          </div>
+          ${rev.comment ? `<div class="review-text">${escapeHtml(rev.comment)}</div>` : '<div class="review-empty-text">Không có nhận xét</div>'}
+        `;
+        if (isMine) {
+          const actions = document.createElement('div');
+          actions.className = 'review-actions';
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'btn-review-edit';
+          editBtn.textContent = 'Sửa';
+          editBtn.addEventListener('click', () => {
+            closeMobileReviewsSheet();
+            const ta = document.querySelector(`textarea[data-spot-form="${spot.id}"]`);
+            if (ta) { ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); ta.focus(); }
+          });
+          const deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.className = 'btn-review-delete';
+          deleteBtn.setAttribute('aria-label', 'Xóa đánh giá');
+          deleteBtn.innerHTML = '🗑️ <span>Xóa đánh giá</span>';
+          deleteBtn.addEventListener('click', () => handleDeleteSpotRating(spot.id));
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+          item.appendChild(actions);
+        }
+        listEl.appendChild(item);
+      });
+      containerEl.appendChild(listEl);
+
+      if (hasMore) {
+        const moreBtn = document.createElement('button');
+        moreBtn.type = 'button';
+        moreBtn.className = 'btn-load-more';
+        moreBtn.textContent = 'Xem thêm';
+        moreBtn.addEventListener('click', () => {
+          ui.page += 1;
+          renderReviewsAreaContent(containerEl, spot, onRequestEdit);
+        });
+        containerEl.appendChild(moreBtn);
+      }
+    }
+
+    function openMobileReviewsSheet(spot, onRequestEdit) {
+      activeMobileSpot = spot;
+      const backdrop = document.getElementById('mobile-reviews-backdrop');
+      const titleEl = document.getElementById('mobile-reviews-title');
+      const subEl = document.getElementById('mobile-reviews-subtitle');
+      const bodyEl = document.getElementById('mobile-reviews-body');
+      const bData = BUILDINGS_DATA.find((b) => b.id === spot.buildingId);
+      titleEl.textContent = spot.shopName;
+      subEl.textContent = bData ? bData.name : spot.buildingId;
+      renderReviewsAreaContent(bodyEl, spot, onRequestEdit);
+      backdrop.classList.remove('hidden');
+    }
+
+    function closeMobileReviewsSheet() {
+      activeMobileSpot = null;
+      document.getElementById('mobile-reviews-backdrop').classList.add('hidden');
+    }
+
+    document.getElementById('btn-close-reviews-sheet').addEventListener('click', closeMobileReviewsSheet);
+    document.getElementById('mobile-reviews-backdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'mobile-reviews-backdrop') closeMobileReviewsSheet();
+    });
+
+    function createSpotRatingSection(spot, onAfterSubmit) {
+      const box = document.createElement('div');
+      box.className = 'rating-box';
+
+      const existing = ratingService.getUserRating(spot.id);
+      let draftStars = existing ? existing.stars : 0;
+
+      const row = document.createElement('div');
+      row.className = 'rating-input-row';
+      const label = document.createElement('span');
+      label.style.fontSize = '12px';
+      label.style.color = '#cbd5e1';
+      label.textContent = existing ? `Đánh giá của bạn (${existing.stars}★):` : 'Chạm để đánh giá:';
+
+      const starPicker = createStarRating({
+        initialStars: draftStars,
+        onChange: (val) => { draftStars = val; }
+      });
+
+      row.appendChild(label);
+      row.appendChild(starPicker);
+      box.appendChild(row);
+
+      const form = document.createElement('div');
+      form.className = 'comment-form';
+
+      const textarea = document.createElement('textarea');
+      textarea.className = 'comment-input';
+      textarea.maxLength = 200;
+      textarea.placeholder = 'Nhận xét ngắn (tùy chọn, tối đa 200 ký tự)...';
+      textarea.value = commentDrafts.get(spot.id) ?? (existing ? existing.comment : '');
+      textarea.dataset.spotForm = spot.id;
+
+      const actions = document.createElement('div');
+      actions.className = 'comment-actions';
+
+      const charCount = document.createElement('span');
+      charCount.className = 'char-count';
+      charCount.textContent = `${textarea.value.length}/200`;
+      textarea.addEventListener('input', () => {
+        charCount.textContent = `${textarea.value.length}/200`;
+        commentDrafts.set(spot.id, textarea.value);
+      });
+
+      const submitBtn = document.createElement('button');
+      submitBtn.type = 'button';
+      submitBtn.className = 'btn btn-primary';
+      submitBtn.style.padding = '6px 12px';
+      submitBtn.style.fontSize = '12px';
+      submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
+
+      submitBtn.addEventListener('click', () => {
+        if (draftStars < 1 || draftStars > 5) {
+          showNoticeToast('Vui lòng chọn từ 1 đến 5 sao trước khi gửi!');
+          return;
+        }
+        ratingService.submitRating(spot.id, draftStars, textarea.value);
+        commentDrafts.delete(spot.id);
+        if (typeof onAfterSubmit === 'function') onAfterSubmit();
+      });
+
+      actions.appendChild(charCount);
+      actions.appendChild(submitBtn);
+      form.appendChild(textarea);
+      form.appendChild(actions);
+      box.appendChild(form);
+
+      const ui = getSpotReviewState(spot.id);
+      const totalReviews = ratingService.getRatings(spot.id).length;
+      const focusEditForm = () => {
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        textarea.focus();
+      };
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'btn-toggle-reviews';
+      toggleBtn.innerHTML = `
+        <span>💬 Xem tất cả đánh giá (${totalReviews})</span>
+        <span>${ui.open && window.innerWidth > 767 ? '▲' : '▼'}</span>
+      `;
+      box.appendChild(toggleBtn);
+
+      const accordion = document.createElement('div');
+      accordion.className = 'reviews-accordion' + (ui.open && window.innerWidth > 767 ? '' : ' hidden');
+      if (ui.open && window.innerWidth > 767) {
+        renderReviewsAreaContent(accordion, spot, focusEditForm);
+      }
+      box.appendChild(accordion);
+
+      toggleBtn.addEventListener('click', () => {
+        if (window.innerWidth <= 767) {
+          openMobileReviewsSheet(spot, focusEditForm);
+        } else {
+          ui.open = !ui.open;
+          accordion.classList.toggle('hidden', !ui.open);
+          toggleBtn.lastElementChild.textContent = ui.open ? '▲' : '▼';
+          if (ui.open) renderReviewsAreaContent(accordion, spot, focusEditForm);
+        }
+      });
+
+      return box;
+    }
+
+    function renderFoodDetail(foodId) {
+      const food = FOODS_DATA.foods.find((f) => f.id === foodId);
+      if (!food) return;
+
+      state.viewMode = 'foodDetail';
+      state.selectedFoodId = foodId;
+      searchControls.classList.add('hidden');
+      btnClearSelection.classList.remove('hidden');
+      panelBody.innerHTML = '';
+
+      const sortedSpots = [...food.spots]
+        .map((sp) => ({ ...sp, rating: ratingService.getAverage(sp.id) }))
+        .sort((a, b) => weightedScore(b.rating) - weightedScore(a.rating));
+
+      const buildingIds = [...new Set(sortedSpots.map((s) => s.buildingId))];
+
+      const nav = document.createElement('div');
+      nav.className = 'detail-nav';
+
+      const backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.className = 'btn';
+      backBtn.textContent = '← Quay lại';
+      backBtn.addEventListener('click', clearAllSelections);
+
+      const viewAllBtn = document.createElement('button');
+      viewAllBtn.type = 'button';
+      viewAllBtn.className = 'btn btn-primary';
+      viewAllBtn.textContent = `Xem tất cả (${buildingIds.length} tòa)`;
+      viewAllBtn.addEventListener('click', () => {
+        state.selectedBuildingId = null;
+        applyBuildingVisuals();
+        fitBuildingsInView(buildingIds);
+        renderFoodDetail(foodId);
+      });
+
+      nav.appendChild(backBtn);
+      if (buildingIds.length > 1) nav.appendChild(viewAllBtn);
+      panelBody.appendChild(nav);
+
+      const hero = document.createElement('div');
+      hero.className = 'detail-hero';
+      hero.innerHTML = `
+        <div class="food-icon">${escapeHtml(food.icon)}</div>
+        <div>
+          <h2>${escapeHtml(food.name)}</h2>
+          <p>${escapeHtml(food.category)} · Có mặt ở ${buildingIds.length} tòa nhà</p>
+        </div>
+      `;
+      panelBody.appendChild(hero);
+
+      sortedSpots.forEach((spot) => {
+        const bData = BUILDINGS_DATA.find((b) => b.id === spot.buildingId);
+        const openInfo = getOpenStatus(spot.openHours);
+
+        const card = document.createElement('div');
+        card.className = 'spot-card' + (state.selectedBuildingId === spot.buildingId ? ' active-spot' : '');
+
+        const header = document.createElement('div');
+        header.className = 'spot-header';
+        header.innerHTML = `
+          <div>
+            <span class="spot-building-tag">${escapeHtml(bData ? bData.name : spot.buildingId)}</span>
+            <div class="spot-shop-name">${escapeHtml(spot.shopName)}</div>
+            ${spot.note ? `<div class="spot-note">${escapeHtml(spot.note)}</div>` : ''}
+          </div>
+          <div class="spot-price">${formatPrice(spot.price)}</div>
+        `;
+        header.addEventListener('click', () => {
+          state.selectedBuildingId = spot.buildingId;
+          applyBuildingVisuals();
+          flyToBuilding(spot.buildingId);
+          renderFoodDetail(foodId);
+        });
+        card.appendChild(header);
+
+        const metaRow = document.createElement('div');
+        metaRow.className = 'spot-meta-row';
+        metaRow.innerHTML = `
+          <span>🕒 ${escapeHtml(spot.openHours)} ·
+            <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">${openInfo.label}</span>
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:5px; color:#f8fafc;">
+            ${spot.rating.count > 0
+              ? `${renderHalfStarsHTML(spot.rating.average)} <strong>${spot.rating.average.toFixed(1)}</strong> <span style="color:#94a3b8;">(${spot.rating.count})</span>`
+              : `<span style="color:#94a3b8;">Chưa có đánh giá</span>`
+            }
+          </span>
+        `;
+        card.appendChild(metaRow);
+
+        if (Array.isArray(spot.photos) && spot.photos.length) {
+          const photoGrid = document.createElement('div');
+          photoGrid.className = 'menu-photo-grid';
+          spot.photos.forEach((photo) => {
+            const wrap = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = supabase.storage.from(MENU_BUCKET).getPublicUrl(photo.object_path).data.publicUrl;
+            img.alt = `Ảnh menu ${spot.shopName}`;
+            img.loading = 'lazy';
+            wrap.appendChild(img);
+            if (shopService.getCurrentUser() && spot.ownerId === shopService.getCurrentUser().id) {
+              const deletePhotoButton = document.createElement('button');
+              deletePhotoButton.type = 'button';
+              deletePhotoButton.className = 'btn-review-delete menu-photo-delete';
+              deletePhotoButton.textContent = 'Xóa ảnh';
+              deletePhotoButton.addEventListener('click', async () => {
+                const error = await shopService.deletePhoto(photo);
+                showNoticeToast(error ? `Không thể xóa ảnh: ${error}` : 'Đã xóa ảnh menu');
+              });
+              wrap.appendChild(deletePhotoButton);
+            }
+            photoGrid.appendChild(wrap);
+          });
+          card.appendChild(photoGrid);
+        }
+
+        const ownerControls = createOwnerControls(spot);
+        if (ownerControls) card.appendChild(ownerControls);
+        card.appendChild(createSpotRatingSection(spot, refreshCurrentView));
+        panelBody.appendChild(card);
+      });
+    }
+
+    function selectFood(foodId, preferredBuildingId = null) {
+      reviewUIState.clear();
+      closeMobileReviewsSheet();
+      const food = FOODS_DATA.foods.find((f) => f.id === foodId);
+      if (!food) return;
+
+      const sortedSpots = [...food.spots]
+        .map((sp) => ({ ...sp, rating: ratingService.getAverage(sp.id) }))
+        .sort((a, b) => weightedScore(b.rating) - weightedScore(a.rating));
+
+      const buildingIds = [...new Set(sortedSpots.map((s) => s.buildingId))];
+      const firstBuildingId = sortedSpots.find((spot) => spot.buildingId === preferredBuildingId)?.buildingId
+        || sortedSpots[0]?.buildingId
+        || null;
+
+      state.selectedFoodId = foodId;
+      state.selectedBuildingId = firstBuildingId;
+      highlightBuildings(buildingIds, food.icon);
+      if (firstBuildingId) flyToBuilding(firstBuildingId);
+      renderFoodDetail(foodId);
+      expandMobileSheetIfPeek();
+    }
+
+    function renderBuildingFoods(buildingId) {
+      const bData = BUILDINGS_DATA.find((b) => b.id === buildingId);
+      if (!bData) return;
+
+      state.viewMode = 'buildingDetail';
+      state.selectedFoodId = null;
+      state.selectedBuildingId = buildingId;
+      searchControls.classList.add('hidden');
+      btnClearSelection.classList.remove('hidden');
+
+      const items = [];
+      FOODS_DATA.foods.forEach((food) => {
+        food.spots.forEach((spot) => {
+          if (spot.buildingId === buildingId) {
+            items.push({ food, spot, rating: ratingService.getAverage(spot.id) });
+          }
+        });
+      });
+
+      highlightBuildings(items.length > 0 ? [buildingId] : [], items[0]?.food.icon || '🍽️');
+      if (items.length === 0) pinMap.forEach(({ el }) => el.classList.add('hidden'));
+      applyBuildingVisuals();
+
+      panelBody.innerHTML = '';
+
+      const nav = document.createElement('div');
+      nav.className = 'detail-nav';
+      const backBtn = document.createElement('button');
+      backBtn.type = 'button';
+      backBtn.className = 'btn';
+      backBtn.textContent = '← Danh sách món';
+      backBtn.addEventListener('click', clearAllSelections);
+      nav.appendChild(backBtn);
+      panelBody.appendChild(nav);
+
+      const hero = document.createElement('div');
+      hero.className = 'detail-hero';
+      hero.innerHTML = `
+        <div class="food-icon">🏢</div>
+        <div>
+          <h2>${escapeHtml(bData.name)}</h2>
+          <p>${escapeHtml(bData.cluster)} · Mã ${escapeHtml(bData.mapCode)} · ${items.length} điểm bán</p>
+        </div>
+      `;
+      panelBody.appendChild(hero);
+
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'Chưa có dữ liệu đồ ăn tại tòa này.';
+        panelBody.appendChild(empty);
+        return;
+      }
+
+      items.sort((a, b) => weightedScore(b.rating) - weightedScore(a.rating));
+
+      items.forEach(({ food, spot, rating }) => {
+        const openInfo = getOpenStatus(spot.openHours);
+        const card = document.createElement('div');
+        card.className = 'spot-card';
+
+        const header = document.createElement('div');
+        header.className = 'spot-header';
+        header.innerHTML = `
+          <div>
+            <span class="spot-building-tag">${escapeHtml(food.icon)} ${escapeHtml(food.name)}</span>
+            <div class="spot-shop-name">${escapeHtml(spot.shopName)}</div>
+            ${spot.note ? `<div class="spot-note">${escapeHtml(spot.note)}</div>` : ''}
+          </div>
+          <div class="spot-price">${formatPrice(spot.price)}</div>
+        `;
+        header.addEventListener('click', () => selectFood(food.id));
+        card.appendChild(header);
+
+        const metaRow = document.createElement('div');
+        metaRow.className = 'spot-meta-row';
+        metaRow.innerHTML = `
+          <span>🕒 ${escapeHtml(spot.openHours)} ·
+            <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">${openInfo.label}</span>
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:5px; color:#f8fafc;">
+            ${rating.count > 0
+              ? `${renderHalfStarsHTML(rating.average)} <strong>${rating.average.toFixed(1)}</strong> <span style="color:#94a3b8;">(${rating.count})</span>`
+              : `<span style="color:#94a3b8;">Chưa có đánh giá</span>`
+            }
+          </span>
+        `;
+        card.appendChild(metaRow);
+
+        const ownerControls = createOwnerControls(spot);
+        if (ownerControls) card.appendChild(ownerControls);
+        card.appendChild(createSpotRatingSection(spot, refreshCurrentView));
+        panelBody.appendChild(card);
+      });
+    }
+
+    function clearAllSelections() {
+      reviewUIState.clear();
+      closeMobileReviewsSheet();
+      state.selectedFoodId = null;
+      resetHighlight();
+      renderFoodList();
+    }
+
+    function updateAuthButton() {
+      const button = document.getElementById('btn-auth');
+      if (!button) return;
+      const user = shopService.getCurrentUser();
+      button.textContent = user ? `Đăng xuất (${user.email || 'đã đăng nhập'})` : 'Đăng nhập chủ quán';
+    }
+
+    function openAuthModal() {
+      const user = shopService.getCurrentUser();
+      if (user) {
+        showDeleteConfirmModal(async () => {
+          await supabase.auth.signOut();
+          showNoticeToast('Đã đăng xuất');
+        }, 'Đăng xuất khỏi tài khoản chủ quán?');
+        return;
+      }
+
+      const backdrop = document.createElement('div');
+      backdrop.className = 'confirm-modal-backdrop';
+      backdrop.innerHTML = `
+        <form class="confirm-modal">
+          <h3>Đăng nhập chủ quán</h3>
+          <p>Supabase sẽ gửi liên kết đăng nhập một lần đến email của bạn.</p>
+          <label class="shop-label">Email
+            <input name="email" type="email" autocomplete="email" required placeholder="ban@example.com">
+          </label>
+          <div class="shop-error hidden" role="alert"></div>
+          <div class="confirm-modal-actions">
+            <button type="button" class="btn" data-act="cancel">Hủy</button>
+            <button type="submit" class="btn btn-primary">Gửi liên kết</button>
+          </div>
+        </form>`;
+      const close = () => backdrop.remove();
+      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+      backdrop.querySelector('[data-act="cancel"]').addEventListener('click', close);
+      backdrop.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const errorEl = form.querySelector('.shop-error');
+        const email = new FormData(form).get('email');
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: window.location.href }
+        });
+        if (error) {
+          errorEl.textContent = error.message;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        close();
+        showNoticeToast('Đã gửi liên kết đăng nhập đến email');
+      });
+      document.body.appendChild(backdrop);
+      backdrop.querySelector('[name="email"]').focus();
+    }
+
+    function openShopForm() {
+      const clusters = [...new Set(BUILDINGS_DATA.map((b) => b.cluster))];
+      const backdrop = document.createElement('div');
+      backdrop.className = 'confirm-modal-backdrop';
+      backdrop.innerHTML = `
+        <form class="confirm-modal shop-modal" novalidate>
+          <h3>Thêm món / quán của bạn</h3>
+          <p>Quán công khai trên Supabase. Hãy đăng nhập trước; quán và menu thuộc tài khoản chủ quán.</p>
+          <label class="shop-label">Tên món
+            <input name="foodName" list="shop-food-names" maxlength="40" placeholder="VD: Cơm tấm (chọn món có sẵn hoặc gõ món mới)">
+          </label>
+          <datalist id="shop-food-names">${FOODS_DATA.foods.map((f) => `<option value="${escapeHtml(f.name)}">`).join('')}</datalist>
+          <div class="shop-row">
+            <label class="shop-label">Danh mục (món mới)
+              <select name="category">${SHOP_CATEGORIES.map((category) => `<option>${escapeHtml(category)}</option>`).join('')}</select>
+            </label>
+            <label class="shop-label">Biểu tượng
+              <select name="icon">${SHOP_ICONS.map((icon) => `<option>${icon}</option>`).join('')}</select>
+            </label>
+          </div>
+          <label class="shop-label">Tên quán <input name="shopName" maxlength="40" placeholder="VD: Cơm tấm cô Ba"></label>
+          <label class="shop-label">Giá (đồng) <input name="price" type="number" inputmode="numeric" min="1000" step="500" placeholder="25000"></label>
+          <div class="shop-label">Bán ở tòa nào (chọn một hoặc nhiều)
+            ${clusters.map((cluster) => `
+              <div class="bld-cluster"><span>${escapeHtml(cluster)}</span><div class="bld-chips">
+                ${BUILDINGS_DATA.filter((b) => b.cluster === cluster).map((building) =>
+                  `<label class="bld-chip"><input type="checkbox" name="building" value="${escapeHtml(building.id)}"><span>${escapeHtml(building.id)}</span></label>`).join('')}
+              </div></div>`).join('')}
+          </div>
+          <div class="shop-label">Giờ hoạt động
+            <div class="shop-row"><input type="time" name="open" value="07:00" aria-label="Giờ mở cửa"><input type="time" name="close" value="21:00" aria-label="Giờ đóng cửa"></div>
+            <label class="shop-check"><input type="checkbox" name="allday"> Mở cả ngày</label>
+          </div>
+          <label class="shop-label">Ghi chú (tùy chọn) <input name="note" maxlength="80" placeholder="VD: Gần sảnh"></label>
+          <label class="shop-label">Ảnh menu (JPG, PNG, WebP; tối đa 5 ảnh, 5 MB/ảnh)
+            <input class="menu-photo-input" name="menuPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+          </label>
+          <div class="shop-error hidden" role="alert"></div>
+          <div class="confirm-modal-actions">
+            <button type="button" class="btn" data-act="cancel">Hủy</button>
+            <button type="submit" class="btn btn-primary">Đăng quán</button>
+          </div>
+        </form>`;
+
+      const onKey = (e) => { if (e.key === 'Escape') close(); };
+      function close() {
+        document.removeEventListener('keydown', onKey);
+        backdrop.remove();
+      }
+
+      document.addEventListener('keydown', onKey);
+      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+      backdrop.querySelector('[data-act="cancel"]').addEventListener('click', close);
+
+      const form = backdrop.querySelector('form');
+      const errorEl = backdrop.querySelector('.shop-error');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang đăng...';
+        const result = await shopService.addShop({
+          foodName: formData.get('foodName'),
+          category: formData.get('category'),
+          icon: formData.get('icon'),
+          shopName: formData.get('shopName'),
+          price: formData.get('price'),
+          note: formData.get('note'),
+          files: formData.getAll('menuPhotos').filter((file) => file && file.size > 0),
+          buildingIds: formData.getAll('building'),
+          openHours: formData.get('allday') === 'on'
+            ? '00:00-23:59'
+            : `${formData.get('open')}-${formData.get('close')}`
+        });
+        submitButton.disabled = false;
+        submitButton.textContent = 'Đăng quán';
+        if (!result.ok) {
+          errorEl.textContent = result.error;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        close();
+        state.selectedCategory = 'Tất cả';
+        renderCategoryFilters();
+        selectFood(result.foodId, result.buildingId);
+        showNoticeToast('Đã đăng quán công khai');
+      });
+
+      document.body.appendChild(backdrop);
+      backdrop.querySelector('[name="foodName"]').focus();
+    }
+
+    function createOwnerControls(spot) {
+      if (!spot.custom) return null;
+      const wrap = document.createElement('div');
+      wrap.className = 'owner-row';
+      const tag = document.createElement('span');
+      tag.className = 'owner-tag';
+      tag.textContent = 'Quán tự đăng · chưa xác minh';
+      wrap.appendChild(tag);
+      if (shopService.getCurrentUser() && spot.ownerId === shopService.getCurrentUser().id) {
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn-review-delete';
+        deleteButton.innerHTML = '🗑️ <span>Xóa quán này</span>';
+        deleteButton.addEventListener('click', () => showDeleteConfirmModal(async () => {
+          const result = await shopService.removeShop(spot.id);
+          if (!result.ok) {
+            showNoticeToast(result.error || 'Không thể xóa lúc này');
+            return;
+          }
+          state.selectedCategory = 'Tất cả';
+          renderCategoryFilters();
+          clearAllSelections();
+          showNoticeToast('Đã xóa quán');
+        }, 'Bạn có chắc muốn xóa quán này khỏi danh sách?'));
+        wrap.appendChild(deleteButton);
+      }
+      return wrap;
+    }
+
+    /* =========================================================================
+       10. TƯƠNG TÁC 3D & MOBILE BOTTOM SHEET
+    ========================================================================= */
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pointerDownPos = null;
+    let isHighDetail = true;
+
+    function updatePointerCoords(clientX, clientY) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    function pickBuilding() {
+      return raycaster.intersectObjects(buildingHitTargets, false).filter((h) => {
+        for (let o = h.object; o; o = o.parent) if (!o.visible) return false;
+        return true;
+      });
+    }
+
+    function handleHover(event) {
+      if (event.pointerType === 'touch') return;
+      updatePointerCoords(event.clientX, event.clientY);
+      raycaster.setFromCamera(pointer, camera);
+      const hits = pickBuilding();
+      const nextId = hits.length > 0 ? hits[0].object.userData.buildingGroup.userData.building.id : null;
+
+      if (nextId !== state.hoveredBuildingId) {
+        state.hoveredBuildingId = nextId;
+        renderer.domElement.style.cursor = nextId ? 'pointer' : 'grab';
+        applyBuildingVisuals();
+      }
+    }
+
+    function handlePointerDown(event) {
+      pointerDownPos = { x: event.clientX, y: event.clientY };
+    }
+
+    function handlePointerUp(event) {
+      if (!pointerDownPos) return;
+      const movedDist = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
+      pointerDownPos = null;
+      if (movedDist > 6) return;
+
+      updatePointerCoords(event.clientX, event.clientY);
+      raycaster.setFromCamera(pointer, camera);
+      const hits = pickBuilding();
+
+      if (hits.length > 0) {
+        const buildingId = hits[0].object.userData.buildingGroup.userData.building.id;
+        reviewUIState.clear();
+        closeMobileReviewsSheet();
+        flyToBuilding(buildingId);
+        renderBuildingFoods(buildingId);
+        expandMobileSheetIfPeek();
+      }
+    }
+
+    function toggleHighDetail() {
+      isHighDetail = !isHighDetail;
+      const btn = document.getElementById('btn-toggle-detail');
+      btn.textContent = isHighDetail ? 'Chi tiết cao: BẬT' : 'Chi tiết cao: TẮT';
+      btn.classList.toggle('active', isHighDetail);
+
+      renderer.setPixelRatio(isHighDetail ? Math.min(window.devicePixelRatio, 2) : 1);
+      renderer.shadowMap.enabled = isHighDetail;
+      sunLight.castShadow = isHighDetail;
+
+      highDetailObjects.forEach((obj) => { obj.visible = isHighDetail; });
+      instancedRefs.forEach(({ mesh, fullCount, reducedCount }) => {
+        mesh.count = isHighDetail ? fullCount : reducedCount;
+      });
+    }
+
+    const foodPanel = document.getElementById('food-panel');
+    const sheetHandle = document.getElementById('sheet-handle');
+
+    function expandMobileSheetIfPeek() {
+      if (window.innerWidth <= 767) {
+        const currentH = foodPanel.getBoundingClientRect().height;
+        if (currentH < window.innerHeight * 0.35) {
+          foodPanel.style.height = '54vh';
+        }
+      }
+    }
+
+    function setupMobileBottomSheet() {
+      let startY = 0;
+      let startH = 0;
+      let dragging = false;
+
+      sheetHandle.addEventListener('pointerdown', (e) => {
+        if (window.innerWidth > 767) return;
+        dragging = true;
+        startY = e.clientY;
+        startH = foodPanel.getBoundingClientRect().height;
+        foodPanel.classList.add('dragging');
+        sheetHandle.setPointerCapture(e.pointerId);
+      });
+
+      sheetHandle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const delta = startY - e.clientY;
+        const nextH = Math.max(135, Math.min(window.innerHeight * 0.86, startH + delta));
+        foodPanel.style.height = `${nextH}px`;
+        updateRendererSize();
+      });
+
+      const endDrag = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        foodPanel.classList.remove('dragging');
+        const h = foodPanel.getBoundingClientRect().height;
+        const vh = window.innerHeight;
+        if (Math.abs(startY - e.clientY) < 6) {
+          foodPanel.style.height = h < vh * 0.35 ? '54vh' : (h < vh * 0.68 ? '82vh' : '150px');
+        } else if (h < vh * 0.28) {
+          foodPanel.style.height = '150px';
+        } else if (h < vh * 0.68) {
+          foodPanel.style.height = '54vh';
+        } else {
+          foodPanel.style.height = '82vh';
+        }
+      };
+
+      sheetHandle.addEventListener('pointerup', endDrag);
+      sheetHandle.addEventListener('pointercancel', endDrag);
+      foodPanel.addEventListener('transitionend', updateRendererSize);
+    }
+
+    function setupInteractions() {
+      const dom = renderer.domElement;
+      dom.style.cursor = 'grab';
+      dom.addEventListener('pointermove', handleHover);
+      dom.addEventListener('pointerdown', handlePointerDown);
+      dom.addEventListener('pointerup', handlePointerUp);
+
+      controls.addEventListener('start', () => { cameraTween = null; });
+
+      searchInput.addEventListener('input', (e) => {
+        state.searchQuery = e.target.value;
+        if (state.viewMode === 'list') renderFoodList();
+      });
+
+      btnClearSelection.addEventListener('click', clearAllSelections);
+
+      document.getElementById('btn-reset-camera').addEventListener('click', () => {
+        startCameraTween(DEFAULT_CAMERA_POS, DEFAULT_TARGET, 850);
+      });
+
+      // Bay thẳng ra trước Cổng KTX ở lối vào phía Đông (x = +106, z = 0)
+      document.getElementById('btn-gate-view').addEventListener('click', () => {
+        startCameraTween(new THREE.Vector3(136, 12, 16), new THREE.Vector3(106, 4, 0), 900);
+      });
+
+      document.getElementById('btn-toggle-detail').addEventListener('click', toggleHighDetail);
+      setupMobileBottomSheet();
+    }
+
+    /* =========================================================================
+       11. KHỞI CHẠY TOÀN BỘ ỨNG DỤNG
+    ========================================================================= */
+    createSkyAndClouds();
+    createCampusGround();
+    createGate();
+
+    BUILDINGS_DATA.forEach((building) => {
+      const group = createBuildingMesh(building);
+      createBuildingLabel(building, group);
+    });
+
+    createTree();
+    createBench();
+    createLamp();
+    createBike();
+    createFlowerBeds();
+
+    renderCategoryFilters();
+    renderFoodList();
+    setupInteractions();
+    if (matchMedia('(pointer: coarse)').matches) toggleHighDetail();
+    updateRendererSize();
+
+    const resizeObserver = new ResizeObserver(updateRendererSize);
+    resizeObserver.observe(container);
+    window.addEventListener('resize', updateRendererSize);
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (cameraTween) {
+        const elapsed = performance.now() - cameraTween.startTime;
+        const progress = Math.min(1, elapsed / cameraTween.duration);
+        const eased = easeInOutCubic(progress);
+        camera.position.lerpVectors(cameraTween.fromPos, cameraTween.toPos, eased);
+        controls.target.lerpVectors(cameraTween.fromTarget, cameraTween.toTarget, eased);
+        if (progress >= 1) cameraTween = null;
+      }
+
+      if (isHighDetail) {
+        cloudGroup.position.x = Math.sin(performance.now() * 0.00008) * 18;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'ktx_khub_ratings_v1') refreshCurrentView();
+    });
+
+    document.getElementById('btn-add-shop').addEventListener('click', openShopForm);
+    document.getElementById('btn-auth').addEventListener('click', openAuthModal);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.getElementById('btn-cancel-delete').click();
+        closeMobileReviewsSheet();
+      }
+    });
+  </script>
+</body>
+</html>
