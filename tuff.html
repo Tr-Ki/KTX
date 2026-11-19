@@ -3018,9 +3018,14 @@
         undoBtn.onclick = async () => {
           clearTimeout(undoToastTimer);
           toast.classList.add('hidden');
-          const res = await ratingService.restoreRating(undoPayload.spotId, undoPayload.rating);
-          if (res.success) refreshCurrentView();
-          else showNoticeToast(res.error || 'Không thể khôi phục đánh giá.');
+          try {
+            const res = await ratingService.restoreRating(undoPayload.spotId, undoPayload.rating);
+            if (res.success) refreshCurrentView();
+            else showNoticeToast(res.error || 'Không thể khôi phục đánh giá.');
+          } catch (error) {
+            console.error('Không thể khôi phục đánh giá:', error);
+            showNoticeToast('Không thể khôi phục đánh giá. Vui lòng thử lại.');
+          }
         };
       } else {
         undoBtn.classList.add('hidden');
@@ -3035,13 +3040,18 @@
 
     function handleDeleteSpotRating(spotId) {
       showDeleteConfirmModal(async () => {
-        const res = await ratingService.deleteRating(spotId);
-        if (!res.success) {
-          if (res.error) showNoticeToast(res.error);
-          return;
+        try {
+          const res = await ratingService.deleteRating(spotId);
+          if (!res.success) {
+            if (res.error) showNoticeToast(res.error);
+            return;
+          }
+          refreshCurrentView();
+          showNoticeToast('Đã xóa đánh giá', { spotId, rating: res.removed });
+        } catch (error) {
+          console.error('Không thể xóa đánh giá:', error);
+          showNoticeToast('Không thể xóa đánh giá. Vui lòng thử lại.');
         }
-        refreshCurrentView();
-        showNoticeToast('Đã xóa đánh giá', { spotId, rating: res.removed });
       });
     }
 
@@ -3269,16 +3279,23 @@
           }
           submitBtn.disabled = true;
           submitBtn.textContent = 'Đang gửi...';
-          const result = await ratingService.submitRating(spot.id, draftStars, textarea.value);
-          if (!result.success) {
-            showNoticeToast(`Không thể gửi đánh giá: ${result.error}`);
+          try {
+            const result = await ratingService.submitRating(spot.id, draftStars, textarea.value);
+            if (!result.success) {
+              showNoticeToast(`Không thể gửi đánh giá: ${result.error}`);
+              submitBtn.disabled = false;
+              submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
+              return;
+            }
+            commentDrafts.delete(spot.id);
+            showNoticeToast('Đã lưu đánh giá');
+            if (typeof onAfterSubmit === 'function') onAfterSubmit();
+          } catch (error) {
+            console.error('Không thể gửi đánh giá:', error);
+            showNoticeToast('Không thể gửi đánh giá. Vui lòng thử lại.');
             submitBtn.disabled = false;
             submitBtn.textContent = existing ? 'Cập nhật' : 'Gửi đánh giá';
-            return;
           }
-          commentDrafts.delete(spot.id);
-          showNoticeToast('Đã lưu đánh giá');
-          if (typeof onAfterSubmit === 'function') onAfterSubmit();
         });
 
         actions.append(charCount, submitBtn);
@@ -3596,13 +3613,14 @@
       const user = shopService.getCurrentUser();
       if (user) {
         showDeleteConfirmModal(async () => {
-          const { error } = await supabase.auth.signOut();
-          if (error) {
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            showNoticeToast('Đã đăng xuất');
+          } catch (error) {
             console.error('Không thể đăng xuất:', error);
-            showNoticeToast(`Không thể đăng xuất: ${error.message}`);
-            return;
+            showNoticeToast(`Không thể đăng xuất: ${error.message || 'Vui lòng thử lại.'}`);
           }
-          showNoticeToast('Đã đăng xuất');
         }, 'Đăng xuất khỏi tài khoản KTX?');
         return;
       }
