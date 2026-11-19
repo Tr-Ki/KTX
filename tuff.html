@@ -1768,6 +1768,139 @@
       .search-box, .comment-input { font-size: 16px; }
       .shop-modal { padding: 18px 14px; max-height: 92dvh; }
     }
+  
+    /* Specific input fixes for Auth Modal and General Modals */
+    .confirm-modal input:not([type="checkbox"]),
+    .auth-modal-card input:not([type="checkbox"]) {
+      width: 100% !important;
+      min-height: 46px !important;
+      padding: 10px 14px 10px 44px !important;
+      background: #1e293b !important;
+      border: 1px solid rgba(148, 163, 184, 0.28) !important;
+      border-radius: var(--radius-md) !important;
+      color: #f8fafc !important;
+      font-family: inherit !important;
+      font-size: 14px !important;
+      outline: none !important;
+      box-sizing: border-box !important;
+      transition: all 0.2s ease !important;
+    }
+    .confirm-modal input:not([type="checkbox"]):focus,
+    .auth-modal-card input:not([type="checkbox"]):focus {
+      border-color: var(--accent) !important;
+      background: #0f172a !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.22) !important;
+    }
+    .confirm-modal input:not([type="checkbox"])::placeholder,
+    .auth-modal-card input:not([type="checkbox"])::placeholder {
+      color: #64748b !important;
+    }
+
+    .auth-modal-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 28px 24px;
+      background: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }
+    .auth-icon-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: var(--radius-full);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .auth-info-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+    .auth-info-icon {
+      font-size: 18px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .input-with-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-top: 6px;
+    }
+    .input-with-icon .input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 18px;
+      color: var(--accent);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .auth-redirect-note {
+      font-size: 11px;
+      color: #93c5fd !important;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.45;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+    }
+    .auth-redirect-note i {
+      font-size: 14px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .confirm-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .confirm-modal-actions .btn {
+      min-height: 42px;
+      padding: 0 18px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .btn-submit-auth {
+      min-width: 140px;
+    }
+    .confirm-modal-icon {
+      font-size: 36px;
+      color: #f59e0b;
+      margin-bottom: -6px;
+    }
+    .undo-toast-icon {
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .photo-dropzone-icon i {
+      font-size: 32px;
+      color: var(--accent);
+    }
+
   </style>
 
   <script type="importmap">
@@ -1780,6 +1913,7 @@
       }
     }
   </script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
   <div class="app-shell">
@@ -1791,11 +1925,11 @@
       <div class="panel-top">
         <div class="panel-brand">
           <div class="brand-title-wrap">
-            <div class="brand-badge">📍 KTX KHU B · ĐHQG TP.HCM</div>
+            <div class="brand-badge"><i class="ri-map-pin-2-fill"></i> KTX KHU B · ĐHQG TP.HCM</div>
             <h1 class="brand-title">Ẩm thực KTX</h1>
             <p class="brand-subtitle">Sơ đồ 3D vệ tinh · Khám phá đồ ăn & quán xá</p>
           </div>
-          <button id="btn-clear-selection" class="btn btn-danger-soft btn-clear-selection hidden" type="button" title="Bỏ chọn tòa/món">✕ Bỏ chọn</button>
+          <button id="btn-clear-selection" class="btn btn-danger-soft btn-clear-selection hidden" type="button" title="Bỏ chọn tòa/món"><i class="ri-close-line"></i> <span>Bỏ chọn</span></button>
         </div>
 
         <div id="search-controls">
@@ -1814,7 +1948,7 @@
           </div>
           <div id="category-filters" class="filter-chips"></div>
           <button id="btn-add-shop" class="btn btn-add-shop" type="button">
-            <span class="btn-icon">➕</span>
+            <i class="ri-add-circle-fill" style="font-size:16px;"></i>
             <span>Thêm món / quán của bạn</span>
           </button>
         </div>
@@ -1828,21 +1962,21 @@
 
       <div class="viewport-toolbar">
         <div class="toolbar-pill">
-          <button id="btn-toggle-detail" class="btn btn-toggle active" type="button" title="Chất lượng đồ họa 3D">⚡ Chi tiết: BẬT</button>
-          <button id="btn-gate-view" class="btn" type="button" title="Góc nhìn Cổng KTX">🚪 Cổng KTX</button>
-          <button id="btn-reset-camera" class="btn btn-primary" type="button" title="Reset về góc nhìn toàn cảnh">🎯 Toàn cảnh</button>
-          <button id="btn-auth" class="btn auth-status" type="button" title="Tài khoản & Đăng nhập">👤 Đăng nhập</button>
+          <button id="btn-toggle-detail" class="btn btn-toggle active" type="button" title="Chất lượng đồ họa 3D"><i class="ri-sparkling-fill"></i> <span id="txt-detail">Chi tiết: BẬT</span></button>
+          <button id="btn-gate-view" class="btn" type="button" title="Góc nhìn Cổng KTX"><i class="ri-door-open-line"></i> <span>Cổng KTX</span></button>
+          <button id="btn-reset-camera" class="btn btn-primary" type="button" title="Reset về góc nhìn toàn cảnh"><i class="ri-focus-3-line"></i> <span>Toàn cảnh</span></button>
+          <button id="btn-auth" class="btn auth-status" type="button" title="Tài khoản & Đăng nhập"><i class="ri-user-3-line"></i> <span class="auth-name">Đăng nhập</span></button>
         </div>
       </div>
 
       <div class="controls-hint">
-        <span class="hint-item">🖱️ Xoay</span>
+        <span class="hint-item"><i class="ri-drag-move-line"></i> Xoay</span>
         <span class="hint-dot">·</span>
-        <span class="hint-item">🔍 Zoom</span>
+        <span class="hint-item"><i class="ri-zoom-in-line"></i> Zoom</span>
         <span class="hint-dot">·</span>
-        <span class="hint-item">✋ Kéo</span>
+        <span class="hint-item"><i class="ri-hand"></i> Kéo</span>
         <span class="hint-dot">·</span>
-        <span class="hint-item">👆 Chạm tòa xem món</span>
+        <span class="hint-item"><i class="ri-cursor-line"></i> Chạm tòa</span>
       </div>
     </main>
   </div>
@@ -1862,7 +1996,7 @@
 
   <div id="confirm-delete-modal" class="confirm-modal-backdrop hidden" role="dialog" aria-modal="true">
     <div class="confirm-modal">
-      <div class="confirm-modal-icon">⚠️</div>
+      <div class="confirm-modal-icon"><i class="ri-alert-line"></i></div>
       <h3>Xác nhận xóa</h3>
       <p>Bạn có chắc muốn xóa đánh giá này?</p>
       <div class="confirm-modal-actions">
@@ -1873,7 +2007,7 @@
   </div>
 
   <div id="undo-toast" class="undo-toast hidden" role="status" aria-live="polite">
-    <span class="undo-toast-icon">ℹ️</span>
+    <span class="undo-toast-icon"><i class="ri-information-line"></i></span>
     <span id="undo-toast-text">Đã xóa đánh giá</span>
     <button id="btn-undo-delete" class="btn-undo hidden" type="button">Hoàn tác</button>
   </div>
@@ -2257,6 +2391,29 @@
         deleteRating, restoreRating, getRatingsByStar, getDistribution, getAverage
       };
     })();
+
+        const FOOD_REMIX_MAP = {
+      '🍚': 'ri-bowl-fill',
+      '🍜': 'ri-restaurant-fill',
+      '🧋': 'ri-cup-fill',
+      '🥖': 'ri-cake-3-fill',
+      '☕': 'ri-cup-line',
+      '🌶️': 'ri-fire-fill',
+      '🥤': 'ri-drinks-2-fill',
+      '🍢': 'ri-knife-line',
+      '🍲': 'ri-goblet-fill',
+      '🍗': 'ri-meat-fill',
+      '🍕': 'ri-pie-chart-2-fill',
+      '🍰': 'ri-cake-fill',
+      '🥗': 'ri-leaf-fill',
+      '🍳': 'ri-sun-fill',
+      '🍽️': 'ri-restaurant-2-line',
+      '🏢': 'ri-building-line'
+    };
+
+    function getRemixIconForFood(icon) {
+      return FOOD_REMIX_MAP[icon] || 'ri-restaurant-2-fill';
+    }
 
     const SHOP_CATEGORIES = ['Món chính', 'Ăn sáng', 'Đồ uống', 'Ăn vặt', 'Khác'];
     const SHOP_ICONS = ['🍚', '🍜', '🧋', '🥖', '☕', '🌶️', '🥤', '🍢', '🍲', '🍗', '🍕', '🍰', '🥗', '🍳'];
@@ -2646,7 +2803,7 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'star-pick-btn';
-        btn.textContent = '★';
+        btn.innerHTML = '<i class="ri-star-fill"></i>';
         btn.setAttribute('aria-label', `Chọn ${i} sao`);
         btn.addEventListener('mouseenter', () => paint(i));
         btn.addEventListener('mouseleave', () => paint(current));
@@ -3781,12 +3938,12 @@
     }
 
     const CATEGORY_ICONS = {
-      'Tất cả': '🍽️',
-      'Món chính': '🍚',
-      'Ăn sáng': '🍳',
-      'Đồ uống': '🧋',
-      'Ăn vặt': '🥖',
-      'Khác': '🍲'
+      'Tất cả': 'ri-apps-2-line',
+      'Món chính': 'ri-bowl-line',
+      'Ăn sáng': 'ri-sun-line',
+      'Đồ uống': 'ri-cup-line',
+      'Ăn vặt': 'ri-cake-3-line',
+      'Khác': 'ri-restaurant-2-line'
     };
 
     function renderCategoryFilters() {
@@ -3796,8 +3953,8 @@
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'chip-btn' + (state.selectedCategory === cat ? ' active' : '');
-        const icon = CATEGORY_ICONS[cat] || '🍽️';
-        btn.innerHTML = `<span class="chip-icon">${icon}</span><span>${escapeHtml(cat)}</span>`;
+        const iconClass = CATEGORY_ICONS[cat] || 'ri-restaurant-2-line';
+        btn.innerHTML = `<i class="${iconClass}"></i><span>${escapeHtml(cat)}</span>`;
         btn.addEventListener('click', () => {
           state.selectedCategory = cat;
           renderCategoryFilters();
@@ -3826,7 +3983,7 @@
       if (filtered.length === 0) {
         panelBody.innerHTML = `
           <div class="empty-state">
-            <div class="empty-icon">🔍</div>
+            <div class="empty-icon"><i class="ri-search-line"></i></div>
             <div class="empty-title">Không tìm thấy món ăn phù hợp</div>
             <p class="empty-desc">Thử tìm kiếm với tên món khác, tên quán hoặc mã tòa nhà (ví dụ: cơm tấm, B01, E02...)</p>
           </div>`;
@@ -3841,21 +3998,23 @@
           : !loaded
             ? 'Đang tải...'
             : bestAvg > 0
-              ? `★ ${bestAvg.toFixed(1)} (${totalCount})`
+              ? `${bestAvg.toFixed(1)} (${totalCount})`
               : 'Chưa có đánh giá';
 
         const card = document.createElement('div');
         card.className = 'food-card';
         card.innerHTML = `
-          <div class="food-icon">${escapeHtml(food.icon)}</div>
+          <div class="food-icon"><i class="${getRemixIconForFood(food.icon)}"></i></div>
           <div class="food-card-info">
             <div class="food-card-title">
               <span class="food-name-text">${escapeHtml(food.name)}</span>
               <span class="food-cat-pill">${escapeHtml(food.category)}</span>
             </div>
             <div class="food-card-meta">
-              <span class="meta-bld-pill">📍 ${buildingCount} tòa bán</span>
-              <span class="meta-rating-pill ${bestAvg > 0 ? 'has-rating' : ''}">${escapeHtml(ratingLabel)}</span>
+              <span class="meta-bld-pill"><i class="ri-building-4-line"></i> ${buildingCount} tòa bán</span>
+              <span class="meta-rating-pill ${bestAvg > 0 ? 'has-rating' : ''}">
+                ${bestAvg > 0 ? '<i class="ri-star-fill"></i> ' : ''}${escapeHtml(ratingLabel)}
+              </span>
             </div>
           </div>
         `;
@@ -3992,7 +4151,7 @@
       scoreBox.innerHTML = !ratingService.isLoaded()
         ? `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">${loadError ? 'Lỗi tải' : 'Đang tải'}</div><div class="dist-score-count">đánh giá</div>`
         : avgInfo.count > 0
-          ? `<div class="dist-score-big">${avgInfo.average.toFixed(1)} ★</div><div class="dist-score-count">${avgInfo.count} đánh giá</div>`
+          ? `<div class="dist-score-big">${avgInfo.average.toFixed(1)} <i class="ri-star-fill" style="color:#f59e0b; font-size:16px; vertical-align:middle;"></i></div><div class="dist-score-count">${avgInfo.count} đánh giá</div>`
           : `<div class="dist-score-big" style="font-size:14px; color:#94a3b8;">Chưa có</div><div class="dist-score-count">0 đánh giá</div>`;
 
       const barsWrap = document.createElement('div');
@@ -4003,7 +4162,7 @@
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'dist-bar-row';
-        row.innerHTML = `<span class="dist-bar-label">${starLevel}★</span><span class="dist-bar-track"><span class="dist-bar-fill" style="width:${pct}%"></span></span><span class="dist-bar-num">${count}</span>`;
+        row.innerHTML = `<span class="dist-bar-label">${starLevel} <i class="ri-star-fill" style="color:#f59e0b; font-size:11px; vertical-align:middle;"></i></span><span class="dist-bar-track"><span class="dist-bar-fill" style="width:${pct}%"></span></span><span class="dist-bar-num">${count}</span>`;
         row.addEventListener('click', () => {
           ui.activeStar = starLevel;
           ui.page = 1;
@@ -4065,7 +4224,7 @@
         item.className = 'review-item';
         item.innerHTML = `
           <div class="review-head">
-            <div><span class="review-stars">${'★'.repeat(rev.stars)}${'☆'.repeat(5 - rev.stars)}</span>${isMine ? '<span class="review-author-badge">Đánh giá của bạn</span>' : ''}</div>
+            <div><span class="review-stars">${'<i class="ri-star-fill"></i>'.repeat(rev.stars)}${'<i class="ri-star-line"></i>'.repeat(5 - rev.stars)}</span>${isMine ? '<span class="review-author-badge"><i class="ri-user-star-line"></i> Đánh giá của bạn</span>' : ''}</div>
             <span class="review-time">${escapeHtml(formatRelativeTime(rev.updatedAt))}</span>
           </div>
           ${rev.comment ? `<div class="review-text">${escapeHtml(rev.comment)}</div>` : '<div class="review-empty-text">Không có nhận xét</div>'}
@@ -4076,7 +4235,7 @@
           const editBtn = document.createElement('button');
           editBtn.type = 'button';
           editBtn.className = 'btn-review-edit';
-          editBtn.textContent = 'Sửa';
+          editBtn.innerHTML = '<i class="ri-edit-line"></i> <span>Sửa</span>';
           editBtn.addEventListener('click', () => {
             closeMobileReviewsSheet();
             const ta = document.querySelector(`textarea[data-spot-form="${spot.id}"]`);
@@ -4086,7 +4245,7 @@
           deleteBtn.type = 'button';
           deleteBtn.className = 'btn-review-delete';
           deleteBtn.setAttribute('aria-label', 'Xóa đánh giá');
-          deleteBtn.innerHTML = '🗑️ <span>Xóa đánh giá</span>';
+          deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i> <span>Xóa đánh giá</span>';
           deleteBtn.addEventListener('click', () => handleDeleteSpotRating(spot.id));
           actions.appendChild(editBtn);
           actions.appendChild(deleteBtn);
@@ -4239,8 +4398,8 @@
       toggleBtn.type = 'button';
       toggleBtn.className = 'btn-toggle-reviews';
       toggleBtn.innerHTML = `
-        <span>💬 Xem tất cả đánh giá (${totalReviews})</span>
-        <span>${ui.open && window.innerWidth > 767 ? '▲' : '▼'}</span>
+        <span><i class="ri-chat-3-line"></i> Xem tất cả đánh giá (${totalReviews})</span>
+        <i class="${ui.open && window.innerWidth > 767 ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}"></i>
       `;
       box.appendChild(toggleBtn);
 
@@ -4257,7 +4416,7 @@
         } else {
           ui.open = !ui.open;
           accordion.classList.toggle('hidden', !ui.open);
-          toggleBtn.lastElementChild.textContent = ui.open ? '▲' : '▼';
+          toggleBtn.lastElementChild.className = ui.open ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line';
           if (ui.open) renderReviewsAreaContent(accordion, spot, focusEditForm);
         }
       });
@@ -4287,13 +4446,13 @@
       const backBtn = document.createElement('button');
       backBtn.type = 'button';
       backBtn.className = 'btn btn-secondary';
-      backBtn.innerHTML = '<span>←</span> <span>Quay lại</span>';
+      backBtn.innerHTML = '<i class="ri-arrow-left-line"></i> <span>Quay lại</span>';
       backBtn.addEventListener('click', clearAllSelections);
 
       const viewAllBtn = document.createElement('button');
       viewAllBtn.type = 'button';
       viewAllBtn.className = 'btn btn-primary';
-      viewAllBtn.innerHTML = `<span>Xem tất cả (${buildingIds.length} tòa)</span>`;
+      viewAllBtn.innerHTML = `<i class="ri-building-line"></i> <span>Xem tất cả (${buildingIds.length} tòa)</span>`;
       viewAllBtn.addEventListener('click', () => {
         state.selectedBuildingId = null;
         applyBuildingVisuals();
@@ -4308,7 +4467,7 @@
       const hero = document.createElement('div');
       hero.className = 'detail-hero';
       hero.innerHTML = `
-        <div class="food-icon hero-icon">${escapeHtml(food.icon)}</div>
+        <div class="food-icon hero-icon"><i class="${getRemixIconForFood(food.icon)}"></i></div>
         <div class="hero-content">
           <div class="hero-badge">${escapeHtml(food.category)}</div>
           <h2>${escapeHtml(food.name)}</h2>
@@ -4328,9 +4487,9 @@
         header.className = 'spot-header';
         header.innerHTML = `
           <div>
-            <span class="spot-building-tag">🏢 ${escapeHtml(bData ? bData.name : spot.buildingId)}</span>
+            <span class="spot-building-tag"><i class="ri-building-4-line"></i> ${escapeHtml(bData ? bData.name : spot.buildingId)}</span>
             <div class="spot-shop-name">${escapeHtml(spot.shopName)}</div>
-            ${spot.note ? `<div class="spot-note">📍 ${escapeHtml(spot.note)}</div>` : ''}
+            ${spot.note ? `<div class="spot-note"><i class="ri-map-pin-range-line"></i> ${escapeHtml(spot.note)}</div>` : ''}
           </div>
           <div class="spot-price">${formatPrice(spot.price)}</div>
         `;
@@ -4345,7 +4504,7 @@
         const metaRow = document.createElement('div');
         metaRow.className = 'spot-meta-row';
         metaRow.innerHTML = `
-          <span class="spot-hours">🕒 ${escapeHtml(spot.openHours)}
+          <span class="spot-hours"><i class="ri-time-line"></i> ${escapeHtml(spot.openHours)}
             <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">
               <span class="status-dot"></span>${openInfo.label}
             </span>
@@ -4375,7 +4534,7 @@
               const deletePhotoButton = document.createElement('button');
               deletePhotoButton.type = 'button';
               deletePhotoButton.className = 'btn-review-delete menu-photo-delete';
-              deletePhotoButton.textContent = 'Xóa ảnh';
+              deletePhotoButton.innerHTML = '<i class="ri-delete-bin-line"></i> <span>Xóa ảnh</span>';
               deletePhotoButton.addEventListener('click', async () => {
                 const error = await shopService.deletePhoto(photo);
                 showNoticeToast(error ? `Không thể xóa ảnh: ${error}` : 'Đã xóa ảnh menu');
@@ -4448,7 +4607,7 @@
       const backBtn = document.createElement('button');
       backBtn.type = 'button';
       backBtn.className = 'btn btn-secondary';
-      backBtn.innerHTML = '<span>←</span> <span>Danh sách món</span>';
+      backBtn.innerHTML = '<i class="ri-arrow-left-line"></i> <span>Danh sách món</span>';
       backBtn.addEventListener('click', clearAllSelections);
       nav.appendChild(backBtn);
       panelBody.appendChild(nav);
@@ -4456,7 +4615,7 @@
       const hero = document.createElement('div');
       hero.className = 'detail-hero';
       hero.innerHTML = `
-        <div class="food-icon hero-icon">🏢</div>
+        <div class="food-icon hero-icon"><i class="ri-building-line"></i></div>
         <div class="hero-content">
           <div class="hero-badge">${escapeHtml(bData.cluster)} · ${escapeHtml(bData.mapCode)}</div>
           <h2>${escapeHtml(bData.name)}</h2>
@@ -4469,7 +4628,7 @@
         const empty = document.createElement('div');
         empty.className = 'empty-state';
         empty.innerHTML = `
-          <div class="empty-icon">🏢</div>
+          <div class="empty-icon"><i class="ri-building-line"></i></div>
           <div class="empty-title">Chưa có quán nào tại tòa ${escapeHtml(bData.name)}</div>
           <p class="empty-desc">Bạn là chủ quán hoặc biết quán ăn ngon tại tòa này? Hãy nhấn "Thêm món / quán của bạn" để chia sẻ!</p>
         `;
@@ -4488,9 +4647,9 @@
         header.className = 'spot-header';
         header.innerHTML = `
           <div>
-            <span class="spot-building-tag">${escapeHtml(food.icon)} ${escapeHtml(food.name)}</span>
+            <span class="spot-building-tag"><i class="${getRemixIconForFood(food.icon)}"></i> ${escapeHtml(food.name)}</span>
             <div class="spot-shop-name">${escapeHtml(spot.shopName)}</div>
-            ${spot.note ? `<div class="spot-note">📍 ${escapeHtml(spot.note)}</div>` : ''}
+            ${spot.note ? `<div class="spot-note"><i class="ri-map-pin-range-line"></i> ${escapeHtml(spot.note)}</div>` : ''}
           </div>
           <div class="spot-price">${formatPrice(spot.price)}</div>
         `;
@@ -4500,7 +4659,7 @@
         const metaRow = document.createElement('div');
         metaRow.className = 'spot-meta-row';
         metaRow.innerHTML = `
-          <span class="spot-hours">🕒 ${escapeHtml(spot.openHours)}
+          <span class="spot-hours"><i class="ri-time-line"></i> ${escapeHtml(spot.openHours)}
             <span class="status-badge ${openInfo.isOpen ? 'status-open' : 'status-closed'}">
               <span class="status-dot"></span>${openInfo.label}
             </span>
@@ -4537,12 +4696,12 @@
       const user = shopService.getCurrentUser();
       if (user) {
         const username = user.email ? (user.email.split('@')[0] || user.email) : 'Tài khoản';
-        button.innerHTML = `<span>👤</span> <span class="auth-name">${escapeHtml(username)}</span>`;
+        button.innerHTML = `<i class="ri-user-smile-line"></i> <span class="auth-name">${escapeHtml(username)}</span>`;
         button.title = `Đang đăng nhập: ${user.email} (Nhấn để xem tài khoản)`;
         button.classList.add('btn-logged-in');
         button.setAttribute('aria-label', `Tài khoản ${user.email}`);
       } else {
-        button.innerHTML = `<span>👤</span> <span class="auth-name">Đăng nhập</span>`;
+        button.innerHTML = `<i class="ri-user-3-line"></i> <span class="auth-name">Đăng nhập</span>`;
         button.title = 'Đăng nhập để đánh giá hoặc quản lý quán';
         button.classList.remove('btn-logged-in');
         button.setAttribute('aria-label', 'Đăng nhập để đánh giá hoặc quản lý quán');
@@ -4570,7 +4729,7 @@
             <div class="account-profile-info">
               <h3 id="account-modal-title">Tài khoản KTX</h3>
               <p class="account-email-text" title="${escapeHtml(user.email || '')}">${escapeHtml(user.email || 'Người dùng')}</p>
-              <div class="account-status-pill">✓ Đã xác thực</div>
+              <div class="account-status-pill"><i class="ri-shield-check-line"></i> Đã xác thực</div>
             </div>
           </div>
 
@@ -4587,14 +4746,14 @@
 
           <div class="account-menu-actions">
             <button type="button" class="btn btn-primary btn-account-action" id="btn-account-add-shop">
-              <span>➕ Thêm món / quán mới</span>
+              <i class="ri-add-line"></i> <span>Thêm món / quán mới</span>
             </button>
           </div>
 
           <div class="confirm-modal-actions" style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
             <button type="button" class="btn btn-secondary" data-act="cancel">Đóng</button>
             <button type="button" class="btn btn-danger-soft" id="btn-account-logout">
-              <span>🚪 Đăng xuất</span>
+              <i class="ri-logout-box-r-line"></i> <span>Đăng xuất</span>
             </button>
           </div>
         </div>`;
@@ -4654,13 +4813,13 @@
       backdrop.innerHTML = `
         <form class="confirm-modal auth-modal-card">
           <div class="auth-header">
-            <div class="auth-icon-badge">✨</div>
+            <div class="auth-icon-badge"><i class="ri-shield-keyhole-line"></i></div>
             <h3 id="auth-modal-title">${escapeHtml(titleText)}</h3>
             <p class="auth-desc">Đăng nhập bảo mật qua liên kết một lần (Magic Link). Không cần mật khẩu.</p>
           </div>
 
           <div class="auth-info-card">
-            <span class="auth-info-icon">💡</span>
+            <i class="ri-lightbulb-line auth-info-icon"></i>
             <div class="auth-info-text">
               <strong>Cách thức:</strong> Nhập email bên dưới, hệ thống sẽ gửi một liên kết đăng nhập. Mở email và bấm vào liên kết để xác thực tài khoản.
             </div>
@@ -4669,13 +4828,13 @@
           <label class="shop-label">
             <span class="label-title">Địa chỉ Email</span>
             <div class="input-with-icon">
-              <span class="input-icon">✉️</span>
+              <i class="ri-mail-line input-icon"></i>
               <input name="email" type="email" autocomplete="email" required placeholder="nhap.email.cua.ban@gmail.com">
             </div>
           </label>
 
           <p class="auth-redirect-note">
-            <span>ℹ️</span> <span>${postLoginMessage}</span>
+            <i class="ri-information-line"></i> <span>${postLoginMessage}</span>
           </p>
 
           <div class="shop-error hidden" role="alert"></div>
@@ -4685,7 +4844,7 @@
             <button type="button" class="btn btn-secondary" data-act="cancel">Hủy</button>
             <button type="submit" class="btn btn-primary btn-submit-auth">
               <span>Gửi liên kết</span>
-              <span>🚀</span>
+              <i class="ri-send-plane-2-fill"></i>
             </button>
           </div>
         </form>`;
@@ -4724,7 +4883,7 @@
           if (error) throw error;
           successEl.innerHTML = `
             <div class="success-box-inner">
-              <div class="success-icon">✅</div>
+              <i class="ri-checkbox-circle-fill success-icon" style="color:#86efac;font-size:24px;"></i>
               <div class="success-content">
                 <strong>Đã gửi liên kết thành công!</strong>
                 <p>Hãy kiểm tra hộp thư đến (hoặc hòm thư Rác/Spam) của <b>${escapeHtml(emailInput.value.trim())}</b> và bấm vào liên kết để đăng nhập.</p>
@@ -4741,7 +4900,7 @@
               clearInterval(resendTimer);
               resendTimer = null;
               submitButton.disabled = false;
-              submitButton.innerHTML = '<span>Gửi lại liên kết</span> <span>🚀</span>';
+              submitButton.innerHTML = '<span>Gửi lại liên kết</span> <i class="ri-send-plane-2-fill"></i>';
               return;
             }
             submitButton.innerHTML = `<span>Gửi lại sau ${seconds}s</span>`;
@@ -4751,7 +4910,7 @@
           errorEl.textContent = error && error.message ? error.message : 'Không thể gửi liên kết. Vui lòng thử lại.';
           errorEl.classList.remove('hidden');
           submitButton.disabled = false;
-          submitButton.innerHTML = '<span>Gửi liên kết</span> <span>🚀</span>';
+          submitButton.innerHTML = '<span>Gửi liên kết</span> <i class="ri-send-plane-2-fill"></i>';
         }
       });
 
@@ -4768,20 +4927,20 @@
         <form class="confirm-modal shop-modal" novalidate>
           <div class="shop-modal-header">
             <div class="shop-modal-title-group">
-              <h3>Quản lý món ăn & quán KTX</h3>
+              <h3><i class="ri-store-3-line"></i> Quản lý món ăn & quán KTX</h3>
               <p>Đăng thông tin quán ăn lên sơ đồ KTX hoặc nhập hàng loạt từ Excel/CSV.</p>
             </div>
-            <button type="button" class="btn btn-secondary" data-act="cancel" style="padding:6px 10px; min-height:32px;">✕</button>
+            <button type="button" class="btn btn-secondary" data-act="cancel" style="padding:6px 10px; min-height:32px;"><i class="ri-close-line"></i></button>
           </div>
 
           <div class="shop-tabs">
-            <button type="button" class="shop-tab-btn active" id="tab-single-btn">✍️ Thêm từng quán</button>
-            <button type="button" class="shop-tab-btn" id="tab-bulk-btn">📊 Nhập từ Excel / CSV</button>
+            <button type="button" class="shop-tab-btn active" id="tab-single-btn"><i class="ri-edit-box-line"></i> Thêm từng quán</button>
+            <button type="button" class="shop-tab-btn" id="tab-bulk-btn"><i class="ri-file-excel-2-line"></i> Nhập từ Excel / CSV</button>
           </div>
 
           <div id="shop-single-section" style="display:flex; flex-direction:column; gap:12px;">
             <div class="shop-section-card">
-              <div class="shop-section-title">🍜 1. Thông tin món ăn</div>
+              <div class="shop-section-title"><i class="ri-restaurant-line"></i> 1. Thông tin món ăn</div>
               <label class="shop-label">Tên món
                 <input name="foodName" list="shop-food-names" maxlength="40" placeholder="VD: Cơm tấm sườn, Bún bò Huế, Trà sữa...">
               </label>
@@ -4797,7 +4956,7 @@
             </div>
 
             <div class="shop-section-card">
-              <div class="shop-section-title">🏬 2. Thông tin quán & Giá bán</div>
+              <div class="shop-section-title"><i class="ri-store-2-line"></i> 2. Thông tin quán & Giá bán</div>
               <div class="shop-row">
                 <label class="shop-label">Tên quán
                   <input name="shopName" maxlength="40" placeholder="VD: Cơm tấm cô Ba, Quán chè B03...">
@@ -4809,7 +4968,7 @@
             </div>
 
             <div class="shop-section-card">
-              <div class="shop-section-title">📍 3. Tòa nhà bán (chọn một hoặc nhiều tòa)</div>
+              <div class="shop-section-title"><i class="ri-building-line"></i> 3. Tòa nhà bán (chọn một hoặc nhiều tòa)</div>
               ${clusters.map((cluster) => `
                 <div class="bld-cluster"><span>${escapeHtml(cluster)}</span><div class="bld-chips">
                   ${BUILDINGS_DATA.filter((b) => b.cluster === cluster).map((building) =>
@@ -4818,7 +4977,7 @@
             </div>
 
             <div class="shop-section-card">
-              <div class="shop-section-title">🕒 4. Giờ hoạt động & Vị trí chi tiết</div>
+              <div class="shop-section-title"><i class="ri-time-line"></i> 4. Giờ hoạt động & Vị trí chi tiết</div>
               <div class="shop-row">
                 <label class="shop-label">Giờ mở cửa
                   <input type="time" name="open" value="07:00" aria-label="Giờ mở cửa">
@@ -4829,7 +4988,7 @@
               </div>
               <label class="shop-check">
                 <input type="checkbox" name="allday">
-                <span>☀️ Mở cửa cả ngày (24/7)</span>
+                <span><i class="ri-24-hours-line"></i> Mở cửa cả ngày (24/7)</span>
               </label>
               <label class="shop-label">Ghi chú vị trí (tùy chọn)
                 <input name="note" maxlength="80" placeholder="VD: Tầng trệt sảnh sau, quầy số 3 căn tin...">
@@ -4837,9 +4996,9 @@
             </div>
 
             <div class="shop-section-card">
-              <div class="shop-section-title">📸 5. Ảnh thực đơn / Menu quán (tối đa 5 ảnh)</div>
+              <div class="shop-section-title"><i class="ri-image-add-line"></i> 5. Ảnh thực đơn / Menu quán (tối đa 5 ảnh)</div>
               <label class="photo-dropzone">
-                <div class="photo-dropzone-icon">📷</div>
+                <div class="photo-dropzone-icon"><i class="ri-camera-lens-line"></i></div>
                 <div class="photo-dropzone-text"><strong>Nhấn để chọn ảnh</strong> (JPG, PNG, WebP; tối đa 5 MB/ảnh)</div>
                 <input class="menu-photo-input" name="menuPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
               </label>
@@ -4850,17 +5009,17 @@
           <div id="shop-bulk-section" class="hidden" style="display:flex; flex-direction:column; gap:12px;">
             <div class="bulk-import">
               <div class="bulk-import-head">
-                <strong>Nhập hàng loạt qua tệp Excel / CSV</strong>
-                <button type="button" class="btn btn-secondary" data-act="download-template">📥 Tải form mẫu CSV</button>
+                <strong><i class="ri-file-excel-line"></i> Nhập hàng loạt qua tệp Excel / CSV</strong>
+                <button type="button" class="btn btn-secondary" data-act="download-template"><i class="ri-download-2-line"></i> Tải form mẫu CSV</button>
               </div>
               <p style="font-size:12px;color:var(--text-muted);line-height:1.45;">Tải file mẫu, điền dữ liệu danh sách quán và tải lên đây. Bạn có thể kiểm tra và chỉnh sửa lỗi trực tiếp trên bảng xem trước bên dưới.</p>
               <label class="photo-dropzone">
-                <div class="photo-dropzone-icon">📁</div>
+                <div class="photo-dropzone-icon"><i class="ri-upload-cloud-2-line"></i></div>
                 <div class="photo-dropzone-text"><strong>Nhấn để tải tệp bảng</strong> (.csv, .xls, .xlsx)</div>
                 <input class="menu-photo-input" name="bulkFile" type="file" accept=".csv,.xls,.xlsx,text/csv">
               </label>
               <div class="bulk-count hidden"></div>
-              <button type="button" class="btn btn-danger-soft bulk-remove-errors hidden">Loại trừ tất cả dòng lỗi</button>
+              <button type="button" class="btn btn-danger-soft bulk-remove-errors hidden"><i class="ri-delete-bin-6-line"></i> Loại trừ tất cả dòng lỗi</button>
               <div class="bulk-table-wrap hidden"></div>
             </div>
           </div>
@@ -4869,7 +5028,7 @@
 
           <div class="confirm-modal-actions" style="margin-top:6px;">
             <button type="button" class="btn btn-secondary" data-act="cancel">Hủy</button>
-            <button type="submit" class="btn btn-primary" id="btn-submit-shop">Đăng quán</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit-shop"><i class="ri-check-line"></i> <span>Đăng quán</span></button>
           </div>
         </form>`;
 
@@ -4905,7 +5064,7 @@
         singleSection.style.display = 'flex';
         bulkSection.classList.add('hidden');
         bulkSection.style.display = 'none';
-        submitButton.textContent = 'Đăng quán';
+        submitButton.innerHTML = '<i class="ri-check-line"></i> <span>Đăng quán</span>';
         submitButton.disabled = false;
       });
 
@@ -4997,11 +5156,11 @@
         bulkCountEl.innerHTML = `<span>${bulkRows.length} dòng đọc được</span><span>${validCount} hợp lệ</span><span class="${errorCount ? 'count-error' : ''}">${errorCount} lỗi</span>`;
         if (activeTab === 'bulk') {
           submitButton.disabled = bulkRows.length > 0 && validCount === 0;
-          submitButton.textContent = bulkRows.length
+          submitButton.innerHTML = bulkRows.length
             ? (errorCount
-              ? `Thêm ${validCount} dòng hợp lệ (bỏ ${errorCount} lỗi)`
-              : `Thêm ${validCount} dòng`)
-            : 'Đăng quán';
+              ? `<i class="ri-check-line"></i> <span>Thêm ${validCount} dòng hợp lệ (bỏ ${errorCount} lỗi)</span>`
+              : `<i class="ri-check-line"></i> <span>Thêm ${validCount} dòng</span>`)
+            : '<i class="ri-check-line"></i> <span>Đăng quán</span>';
         }
         if (!bulkRows.length) {
           bulkWrapEl.classList.add('hidden');
@@ -5055,7 +5214,7 @@
           const removeButton = document.createElement('button');
           removeButton.type = 'button';
           removeButton.className = 'btn bulk-remove';
-          removeButton.textContent = '×';
+          removeButton.innerHTML = '<i class="ri-close-line"></i>';
           removeButton.addEventListener('click', () => {
             bulkRows.splice(index, 1);
             refreshBulkValidation();
@@ -5096,7 +5255,7 @@
           bulkCountEl.classList.add('hidden');
           bulkWrapEl.classList.add('hidden');
           submitButton.disabled = false;
-          submitButton.textContent = 'Đăng quán';
+          submitButton.innerHTML = '<i class="ri-check-line"></i> <span>Đăng quán</span>';
           errorEl.textContent = `Không thể đọc tệp: ${error.message || 'Định dạng không hỗ trợ.'}`;
           errorEl.classList.remove('hidden');
         }
@@ -5108,14 +5267,14 @@
         errorEl.classList.add('hidden');
         const formData = new FormData(form);
         submitButton.disabled = true;
-        submitButton.textContent = 'Đang đăng...';
+        submitButton.innerHTML = '<span>Đang đăng...</span>';
 
         if (activeTab === 'bulk' && bulkRows.length) {
           const validRows = bulkRows.map(validateBulkRow).filter((row) => row.errors.length === 0);
           const invalidCount = bulkRows.length - validRows.length;
           if (!validRows.length) {
             submitButton.disabled = false;
-            submitButton.textContent = 'Không có dòng hợp lệ';
+            submitButton.innerHTML = '<span>Không có dòng hợp lệ</span>';
             errorEl.textContent = 'Không thể thêm: không có dòng hợp lệ.';
             errorEl.classList.remove('hidden');
             return;
@@ -5123,7 +5282,7 @@
           const ownedBefore = shopService.getOwnedCount();
           if (ownedBefore + validRows.length > 20) {
             submitButton.disabled = false;
-            submitButton.textContent = 'Thêm dữ liệu';
+            submitButton.innerHTML = '<span>Thêm dữ liệu</span>';
             errorEl.textContent = `Không thể thêm: mỗi người đăng tối đa 20 điểm bán. Hiện có ${ownedBefore}, dữ liệu hợp lệ có ${validRows.length}.`;
             errorEl.classList.remove('hidden');
             return;
@@ -5189,7 +5348,7 @@
             : `${formData.get('open')}-${formData.get('close')}`
         });
         submitButton.disabled = false;
-        submitButton.textContent = 'Đăng quán';
+        submitButton.innerHTML = '<i class="ri-check-line"></i> <span>Đăng quán</span>';
         if (!result.ok) {
           errorEl.textContent = result.error;
           errorEl.classList.remove('hidden');
@@ -5213,13 +5372,13 @@
       wrap.className = 'owner-row';
       const tag = document.createElement('span');
       tag.className = 'owner-tag';
-      tag.innerHTML = '<span>✨ Quán tự đăng</span>';
+      tag.innerHTML = '<i class="ri-sparkling-fill"></i> <span>Quán tự đăng</span>';
       wrap.appendChild(tag);
       if (shopService.getCurrentUser() && spot.ownerId === shopService.getCurrentUser().id) {
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'btn-review-delete';
-        deleteButton.innerHTML = '<span>🗑️</span> <span>Xóa quán</span>';
+        deleteButton.innerHTML = '<i class="ri-delete-bin-line"></i> <span>Xóa quán</span>';
         deleteButton.addEventListener('click', () => showDeleteConfirmModal(async () => {
           const result = await shopService.removeShop(spot.id);
           if (!result.ok) {
@@ -5298,7 +5457,7 @@
     function toggleHighDetail() {
       isHighDetail = !isHighDetail;
       const btn = document.getElementById('btn-toggle-detail');
-      btn.textContent = isHighDetail ? '⚡ Chi tiết: BẬT' : '⚡ Chi tiết: TẮT';
+      btn.innerHTML = `<i class="ri-sparkling-fill"></i> <span id="txt-detail">Chi tiết: ${isHighDetail ? 'BẬT' : 'TẮT'}</span>`;
       btn.classList.toggle('active', isHighDetail);
 
       renderer.setPixelRatio(isHighDetail ? Math.min(window.devicePixelRatio, 2) : 1);
