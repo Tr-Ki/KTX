@@ -9,6 +9,8 @@
 - Existing local ratings are migrated for the signed-in user on their first visit after this update. Demo ratings are not imported. Legacy data is retained on the device if migration fails.
 - Legacy user-added shops are migrated after sign-in; local data is removed only after successful migration.
 - Menu images are JPG, PNG, or WebP, up to 5 MB each and 5 images per shop, stored in the public `ktx-menu-photos` bucket.
+- The shop form supports bulk import from CSV, XLS, or XLSX. A CSV template is downloadable from the form.
+- Bulk preview lists every parsed row, marks validation errors, allows inline edits and row removal, and can discard all error rows before submission.
 
 ## Authentication redirect
 

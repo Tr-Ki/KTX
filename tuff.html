@@ -887,6 +887,20 @@
     .menu-photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .menu-photo-grid img { width: 100%; height: 82px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
     .menu-photo-delete { width: 100%; margin-top: 4px; }
+    .bulk-import { display:flex; flex-direction:column; gap:10px; padding:10px; border:1px solid var(--border); border-radius:10px; background:rgba(15,23,42,.5); }
+    .bulk-import-head { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .bulk-import-head strong { font-size:13px; }
+    .bulk-table-wrap { max-height:300px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+    .bulk-table { width:100%; border-collapse:collapse; font-size:12px; min-width:760px; }
+    .bulk-table th { position:sticky; top:0; z-index:1; background:#1e293b; color:#cbd5e1; text-align:left; padding:7px; border-bottom:1px solid var(--border); }
+    .bulk-table td { padding:5px; border-bottom:1px solid rgba(148,163,184,.12); vertical-align:top; }
+    .bulk-table tr.row-error { background:rgba(239,68,68,.09); }
+    .bulk-table input, .bulk-table select { width:100%; min-width:90px; min-height:38px; border:1px solid var(--border); border-radius:7px; background:#0f172a; color:#f8fafc; padding:6px; font-family:inherit; }
+    .bulk-table .row-error-text { max-width:210px; color:#fca5a5; line-height:1.35; }
+    .bulk-remove { min-height:38px !important; min-width:38px !important; padding:0 8px !important; }
+    .bulk-count { display:flex; gap:8px; flex-wrap:wrap; color:#cbd5e1; font-size:12px; }
+    .bulk-count span { border-radius:999px; padding:5px 8px; background:rgba(148,163,184,.12); }
+    .bulk-count .count-error { color:#fecaca; background:rgba(239,68,68,.14); }
   </style>
 
   <script type="importmap">
@@ -894,7 +908,8 @@
       "imports": {
         "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
         "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+        "xlsx": "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs"
       }
     }
   </script>
@@ -982,6 +997,7 @@
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { createClient } from '@supabase/supabase-js';
+    import * as XLSX from 'xlsx';
 
     /* =========================================================================
        1. DỮ LIỆU TÒA NHÀ CHUẨN THEO ẢNH VỆ TINH KTX KHU B
@@ -1667,7 +1683,12 @@
       }
 
       function getCurrentUser() { return currentUser; }
-      return { rebuild, addShop, removeShop, deletePhoto, migrateLocalShops, getCurrentUser };
+      function getOwnedCount() {
+        return currentUser
+          ? remoteShops.filter((shop) => shop.owner_id === currentUser.id).length
+          : 0;
+      }
+      return { rebuild, addShop, removeShop, deletePhoto, migrateLocalShops, getCurrentUser, getOwnedCount };
     })();
 
     /* =========================================================================
@@ -3743,6 +3764,19 @@
             <label class="shop-check"><input type="checkbox" name="allday"> Mở cả ngày</label>
           </div>
           <label class="shop-label">Ghi chú (tùy chọn) <input name="note" maxlength="80" placeholder="VD: Gần sảnh"></label>
+          <div class="bulk-import">
+            <div class="bulk-import-head">
+              <strong>Thêm nhanh bằng bảng</strong>
+              <button type="button" class="btn" data-act="download-template">Tải form mẫu CSV</button>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.45;">Tải CSV, XLS hoặc XLSX theo form mẫu. Dòng sai có thể sửa trực tiếp; khi tải dữ liệu cũ chỉ hàng hợp lệ được giữ lại.</p>
+            <label class="shop-label">Tệp bảng
+              <input class="menu-photo-input" name="bulkFile" type="file" accept=".csv,.xls,.xlsx,text/csv">
+            </label>
+            <div class="bulk-count hidden"></div>
+            <button type="button" class="btn bulk-remove-errors hidden">Loại trừ tất cả dòng lỗi</button>
+            <div class="bulk-table-wrap hidden"></div>
+          </div>
           <label class="shop-label">Ảnh menu (JPG, PNG, WebP; tối đa 5 ảnh, 5 MB/ảnh)
             <input class="menu-photo-input" name="menuPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
           </label>
@@ -3765,14 +3799,256 @@
 
       const form = backdrop.querySelector('form');
       const errorEl = backdrop.querySelector('.shop-error');
+      let bulkRows = [];
+      const bulkFileInput = form.querySelector('[name="bulkFile"]');
+      const bulkCountEl = form.querySelector('.bulk-count');
+      const bulkWrapEl = form.querySelector('.bulk-table-wrap');
+      const removeErrorsButton = form.querySelector('.bulk-remove-errors');
+      const submitButton = form.querySelector('[type="submit"]');
+
+      form.querySelector('[data-act="download-template"]').addEventListener('click', () => {
+        const aoa = [
+          ['food_name', 'shop_name', 'building_id', 'category', 'icon', 'price', 'open_hours', 'note'],
+          ['Cơm tấm', 'Cơm tấm cô Ba', 'B01', 'Món chính', '🍚', 25000, '07:00-20:30', 'Gần sảnh']
+        ];
+        const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+        const csv = XLSX.utils.sheet_to_csv(worksheet);
+        const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'ktx_shop_import_template.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      function normalizeHeader(value) {
+        return String(value || '').normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+          .trim().toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      }
+
+      function validateBulkRow(source) {
+        const row = { ...source };
+        const errors = [];
+        if (Array.isArray(row.db_errors)) errors.push(...row.db_errors);
+        row.food_name = String(row.food_name || '').trim().slice(0, 40);
+        row.shop_name = String(row.shop_name || '').trim().slice(0, 40);
+        row.building_id = String(row.building_id || '').trim().toUpperCase();
+        row.category = String(row.category || 'Khác').trim();
+        row.icon = String(row.icon || '🍽️').trim();
+        row.price = Math.round(Number(String(row.price || '').replace(/[,\s]/g, '').replace(/\./g, '')));
+        row.open_hours = String(row.open_hours || '').trim();
+        row.note = String(row.note || '').trim().slice(0, 80);
+        if (row.food_name.length < 2) errors.push('Tên món phải từ 2 ký tự');
+        if (row.shop_name.length < 2) errors.push('Tên quán phải từ 2 ký tự');
+        if (!BUILDINGS_DATA.some((building) => building.id === row.building_id)) errors.push(`Tòa "${row.building_id || '(trống)'}" không tồn tại`);
+        if (!Number.isFinite(row.price) || row.price < 1000 || row.price > 1000000) errors.push('Giá phải từ 1.000đ đến 1.000.000đ');
+        if (!/^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/.test(row.open_hours) || row.open_hours.slice(0, 5) === row.open_hours.slice(6)) {
+          errors.push('Giờ hoạt động phải có dạng HH:MM-HH:MM');
+        }
+        if (!SHOP_CATEGORIES.includes(row.category)) errors.push(`Danh mục không hợp lệ: "${row.category || '(trống)'}"`);
+        if (!SHOP_ICONS.includes(row.icon)) row.icon = '🍽️';
+        row.errors = errors;
+        return row;
+      }
+
+      function refreshBulkValidation() {
+        bulkRows = bulkRows.map(validateBulkRow);
+        const errorCount = bulkRows.filter((row) => row.errors.length).length;
+        const validCount = bulkRows.length - errorCount;
+        bulkCountEl.classList.toggle('hidden', bulkRows.length === 0);
+        removeErrorsButton.classList.toggle('hidden', errorCount === 0);
+        bulkCountEl.innerHTML = `<span>${bulkRows.length} dòng đọc được</span><span>${validCount} hợp lệ</span><span class="${errorCount ? 'count-error' : ''}">${errorCount} lỗi</span>`;
+        submitButton.disabled = bulkRows.length > 0 && validCount === 0;
+        submitButton.textContent = bulkRows.length
+          ? (errorCount
+            ? `Thêm ${validCount} dòng hợp lệ và bỏ ${errorCount} dòng lỗi`
+            : `Thêm ${validCount} dòng`)
+          : 'Đăng quán';
+        if (!bulkRows.length) {
+          bulkWrapEl.classList.add('hidden');
+          return;
+        }
+
+        bulkWrapEl.classList.remove('hidden');
+        bulkWrapEl.innerHTML = `<table class="bulk-table"><thead><tr>
+          <th>#</th><th>Tên món</th><th>Tên quán</th><th>Tòa</th><th>Danh mục</th><th>Biểu tượng</th>
+          <th>Giá</th><th>Giờ hoạt động</th><th>Ghi chú</th><th>Lỗi</th><th></th>
+        </tr></thead><tbody></tbody></table>`;
+        const tbody = bulkWrapEl.querySelector('tbody');
+        bulkRows.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          if (row.errors.length) tr.className = 'row-error';
+          tr.innerHTML = `<td>${index + 1}</td>`;
+          const fields = [
+            ['food_name', 'text'], ['shop_name', 'text'], ['building_id', 'text'],
+            ['category', 'select'], ['icon', 'select'], ['price', 'number'],
+            ['open_hours', 'text'], ['note', 'text']
+          ];
+          fields.forEach(([key, type]) => {
+            const td = document.createElement('td');
+            let input;
+            if (type === 'select') {
+              input = document.createElement('select');
+              (key === 'category' ? SHOP_CATEGORIES : SHOP_ICONS).forEach((value) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                input.appendChild(option);
+              });
+            } else {
+              input = document.createElement('input');
+              input.type = type;
+            }
+            input.value = row[key] ?? '';
+            input.addEventListener('change', () => {
+              row[key] = input.value;
+              delete row.db_errors;
+              refreshBulkValidation();
+            });
+            td.appendChild(input);
+            tr.appendChild(td);
+          });
+          const errorCell = document.createElement('td');
+          errorCell.className = 'row-error-text';
+          errorCell.textContent = row.errors.join('; ') || 'Hợp lệ';
+          tr.appendChild(errorCell);
+          const removeCell = document.createElement('td');
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'btn bulk-remove';
+          removeButton.textContent = '×';
+          removeButton.addEventListener('click', () => {
+            bulkRows.splice(index, 1);
+            refreshBulkValidation();
+          });
+          removeCell.appendChild(removeButton);
+          tr.appendChild(removeCell);
+          tbody.appendChild(tr);
+        });
+      }
+
+      removeErrorsButton.addEventListener('click', () => {
+        const removedCount = bulkRows.filter((row) => row.errors.length).length;
+        bulkRows = bulkRows.filter((row) => row.errors.length === 0);
+        refreshBulkValidation();
+        showNoticeToast(`Đã loại ${removedCount} dòng lỗi`);
+      });
+
+      bulkFileInput.addEventListener('change', async () => {
+        const file = bulkFileInput.files?.[0];
+        if (!file) return;
+        errorEl.classList.add('hidden');
+        try {
+          const buffer = await file.arrayBuffer();
+          const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+          const sheetName = workbook.SheetNames[0];
+          if (!sheetName) throw new Error('Tệp không có trang dữ liệu.');
+          const sourceRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' });
+          bulkRows = sourceRows.map((source) => {
+            const normalized = {};
+            Object.entries(source).forEach(([key, value]) => {
+              normalized[normalizeHeader(key)] = value;
+            });
+            return normalized;
+          });
+          refreshBulkValidation();
+        } catch (error) {
+          bulkRows = [];
+          bulkCountEl.classList.add('hidden');
+          bulkWrapEl.classList.add('hidden');
+          submitButton.disabled = false;
+          submitButton.textContent = 'Đăng quán';
+          errorEl.textContent = `Không thể đọc tệp: ${error.message || 'Định dạng không hỗ trợ.'}`;
+          errorEl.classList.remove('hidden');
+        }
+      });
+
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         errorEl.textContent = '';
         errorEl.classList.add('hidden');
         const formData = new FormData(form);
-        const submitButton = form.querySelector('[type="submit"]');
         submitButton.disabled = true;
         submitButton.textContent = 'Đang đăng...';
+
+        if (bulkRows.length) {
+          const validRows = bulkRows.map(validateBulkRow).filter((row) => row.errors.length === 0);
+          const invalidCount = bulkRows.length - validRows.length;
+          if (!validRows.length) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Không có dòng hợp lệ';
+            errorEl.textContent = 'Không thể thêm: không có dòng hợp lệ.';
+            errorEl.classList.remove('hidden');
+            return;
+          }
+          const ownedBefore = shopService.getOwnedCount();
+          if (ownedBefore + validRows.length > 20) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Thêm dữ liệu';
+            errorEl.textContent = `Không thể thêm: mỗi người đăng tối đa 20 điểm bán. Hiện có ${ownedBefore}, dữ liệu hợp lệ có ${validRows.length}.`;
+            errorEl.classList.remove('hidden');
+            return;
+          }
+          const files = formData.getAll('menuPhotos').filter((file) => file && file.size > 0);
+          if (files.length > 0 && files.length > 5) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Thêm dữ liệu';
+            errorEl.textContent = 'Tối đa 5 ảnh menu cho một đợt.';
+            errorEl.classList.remove('hidden');
+            return;
+          }
+          const results = [];
+          for (const row of validRows) {
+            const result = await shopService.addShop({
+              foodName: row.food_name,
+              category: row.category,
+              icon: row.icon,
+              shopName: row.shop_name,
+              price: row.price,
+              note: row.note,
+              files: [],
+              buildingIds: [row.building_id],
+              openHours: row.open_hours
+            });
+            results.push({ row, result });
+          }
+          const failed = results.filter(({ result }) => !result.ok);
+          const succeeded = results.filter(({ result }) => result.ok);
+          if (failed.length) {
+            failed.forEach(({ row, result }) => {
+              const match = bulkRows.find((item) =>
+                item.food_name === row.food_name
+                && item.shop_name === row.shop_name
+                && item.building_id === row.building_id
+                && item.open_hours === row.open_hours);
+            if (match) match.db_errors = [...new Set([...(match.db_errors || []), result.error])];
+            });
+            refreshBulkValidation();
+          } else {
+            bulkRows = [];
+            bulkCountEl.classList.add('hidden');
+            bulkWrapEl.classList.add('hidden');
+            removeErrorsButton.classList.add('hidden');
+          }
+          submitButton.disabled = false;
+          if (failed.length) {
+            errorEl.textContent = `${failed.length} dòng hợp lệ không thể thêm; ${succeeded.length} dòng đã thêm thành công;${invalidCount ? ` ${invalidCount} dòng lỗi đã bỏ qua.` : ''}`;
+            errorEl.classList.remove('hidden');
+            return;
+          }
+          close();
+          state.selectedCategory = 'Tất cả';
+          renderCategoryFilters();
+          if (succeeded[0]?.result.foodId) selectFood(succeeded[0].result.foodId, succeeded[0].result.buildingId);
+          showNoticeToast(`Đã thêm ${succeeded.length} quán${invalidCount ? `, bỏ ${invalidCount} dòng lỗi` : ''}`);
+          return;
+        }
+
         const result = await shopService.addShop({
           foodName: formData.get('foodName'),
           category: formData.get('category'),
