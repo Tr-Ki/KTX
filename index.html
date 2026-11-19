@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KTX Khu B Food 3D</title>
+  <script>
+    // Chuyển tiếp ngay lập tức đến tuff.html, đồng thời giữ nguyên toàn bộ query params và hash (#access_token=...)
+    (function() {
+      const search = window.location.search || '';
+      const hash = window.location.hash || '';
+      window.location.replace('tuff.html' + search + hash);
+    })();
+  </script>
+</head>
+<body style="background:#0b1120; color:#94a3b8; font-family:system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0;">
+  <p>Đang chuyển hướng đến KTX Food... <a href="tuff.html" style="color:#38bdf8; text-decoration:none;">Nhấn vào đây nếu trang không tự chuyển</a>.</p>
+</body>
+</html>
