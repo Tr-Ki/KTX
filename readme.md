@@ -65,7 +65,8 @@ TrKien-KTX/
 │   └── migrations/
 │       ├── 202611190001_init_ktx.sql           # Khởi tạo bảng dữ liệu, bucket & RLS policies
 │       └── 202611190002_add_shared_ratings.sql # Bảng đánh giá chia sẻ cộng đồng
-├── tuff.html                     # Ứng dụng nguồn duy nhất (triển khai thành index.html)
+├── index.html                    # Trang chuyển tiếp cục bộ hỗ trợ callback token Supabase
+├── tuff.html                     # Ứng dụng nguồn duy nhất (triển khai thành index.html trên Pages)
 └── readme.md                     # Tài liệu hướng dẫn dự án
 ```
 
@@ -79,7 +80,7 @@ Vì ứng dụng được thiết kế dạng Single Page Application thuần s�
 ```bash
 python -m http.server 8080
 ```
-Sau đó truy cập: `http://localhost:8080/tuff.html`
+Sau đó truy cập: `http://localhost:8080` (hoặc `http://localhost:8080/tuff.html`)
 
 ### 2. Sử dụng Node.js (npx serve hoặc http-server)
 ```bash
@@ -94,12 +95,18 @@ Mở file `tuff.html` trong VS Code, nhấn chuột phải và chọn **Open wit
 ## 🔐 Cấu hình Xác thực & Supabase
 
 ### Cấu hình URL Redirect trong Supabase
-Để liên kết đăng nhập Magic Link chuyển hướng chính xác về ứng dụng đã triển khai:
+Để liên kết đăng nhập Magic Link hoạt động chính xác cả ở môi trường phát triển cục bộ (localhost) và môi trường triển khai thực tế (GitHub Pages):
 1. Đăng nhập vào trang quản trị [Supabase Dashboard](https://supabase.com/dashboard).
 2. Chọn dự án KTX (`fbwvypwbrpgpgcgryjbs`).
 3. Vào **Authentication → URL Configuration**:
-   - **Site URL**: `https://tr-ki.github.io/KTX/`
-   - **Redirect URLs**: Thêm `https://tr-ki.github.io/KTX/` và `http://localhost:8080/tuff.html` (nếu cần test local).
+   - **Site URL**: Nhập URL production chính thức của bạn (ví dụ: `https://petertuananh.github.io/TrKien-KTX/` hoặc `http://localhost:8080/` khi phát triển local).
+   - **Redirect URLs (Allow list)**: Bấm **Add URL** và thêm các URL hợp lệ sau:
+     - `http://localhost:8080/**`
+     - `http://localhost:8080/`
+     - `http://localhost:8080/tuff.html`
+     - `https://petertuananh.github.io/TrKien-KTX/**`
+     - `https://tr-ki.github.io/KTX/**`
+4. Bấm **Save changes**.
 
 ### Biến môi trường cho GitHub Actions
 Để pipeline tự động cập nhật Database và triển khai GitHub Pages khi push code lên nhánh `main`, cần cấu hình các secrets sau trong **Repository Settings → Secrets and variables → Actions**:
