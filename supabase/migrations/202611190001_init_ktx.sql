@@ -59,12 +59,19 @@ begin
 end;
 $$;
 
+drop trigger if exists enforce_menu_photo_limit_before_insert on public.menu_photos;
+
 create trigger enforce_menu_photo_limit_before_insert
   before insert on public.menu_photos
   for each row execute function public.enforce_menu_photo_limit();
 
 alter table public.shops enable row level security;
 alter table public.menu_photos enable row level security;
+
+drop policy if exists "shops are publicly readable" on public.shops;
+drop policy if exists "authenticated users can create shops" on public.shops;
+drop policy if exists "owners can update their shops" on public.shops;
+drop policy if exists "owners can delete their shops" on public.shops;
 
 create policy "shops are publicly readable"
   on public.shops for select
@@ -85,6 +92,10 @@ create policy "owners can delete their shops"
   on public.shops for delete
   to authenticated
   using (owner_id = auth.uid());
+
+drop policy if exists "menu photos are publicly readable" on public.menu_photos;
+drop policy if exists "owners can create menu photo metadata" on public.menu_photos;
+drop policy if exists "owners can delete menu photo metadata" on public.menu_photos;
 
 create policy "menu photos are publicly readable"
   on public.menu_photos for select
@@ -119,6 +130,11 @@ on conflict (id) do update set
   public = excluded.public,
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "public can view menu photos" on storage.objects;
+drop policy if exists "owners can upload menu photos" on storage.objects;
+drop policy if exists "owners can update menu photos" on storage.objects;
+drop policy if exists "owners can delete menu photos" on storage.objects;
 
 create policy "public can view menu photos"
   on storage.objects for select

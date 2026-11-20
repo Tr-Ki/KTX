@@ -31,10 +31,12 @@ Hệ thống bản đồ 3D tương tác trực quan kết hợp nền tảng t�
   - Cung cấp tính năng tải file mẫu CSV chuẩn.
   - Hỗ trợ tải file bảng định dạng `.csv`, `.xls` hoặc `.xlsx`.
   - Bảng xem trước dữ liệu có đánh dấu lỗi, cho phép chỉnh sửa trực tiếp trên từng ô hoặc loại trừ toàn bộ các dòng lỗi chỉ với 1 click.
+  - Mỗi tài khoản tối đa 20 điểm bán; quy tắc được kiểm tra cả trong giao diện lẫn trigger Supabase.
 
 ### 5. Đăng nhập tiện lợi bằng Magic Link (Passwordless OTP)
 - Đăng nhập bảo mật qua liên kết gửi một lần về email — **không cần ghi nhớ mật khẩu**.
 - Tự động đồng bộ và di chuyển dữ liệu cũ từ LocalStorage lên tài khoản Supabase ngay sau khi đăng nhập thành công.
+- Chuyển dữ liệu cũ có kiểm tra trùng để tránh tạo lại quán đã được chuyển trước đó.
 - Hộp thoại quản lý tài khoản cá nhân, xem số lượng quán đã đăng và đăng xuất an toàn.
 
 ---
@@ -64,7 +66,8 @@ TrKien-KTX/
 │   ├── config.toml               # Cấu hình dự án Supabase cục bộ
 │   └── migrations/
 │       ├── 202611190001_init_ktx.sql           # Khởi tạo bảng dữ liệu, bucket & RLS policies
-│       └── 202611190002_add_shared_ratings.sql # Bảng đánh giá chia sẻ cộng đồng
+│       ├── 202611190002_add_shared_ratings.sql # Bảng đánh giá chia sẻ cộng đồng
+│       └── 202611200001_harden_shops.sql        # Giới hạn/quy tắc quán phía database
 ├── index.html                    # Trang chuyển tiếp cục bộ hỗ trợ callback token Supabase
 ├── tuff.html                     # Ứng dụng nguồn duy nhất (triển khai thành index.html trên Pages)
 └── readme.md                     # Tài liệu hướng dẫn dự án
@@ -95,17 +98,14 @@ Mở file `tuff.html` trong VS Code, nhấn chuột phải và chọn **Open wit
 ## 🔐 Cấu hình Xác thực & Supabase
 
 ### Cấu hình URL Redirect trong Supabase
-Để liên kết đăng nhập Magic Link hoạt động chính xác cả ở môi trường phát triển cục bộ (localhost) và môi trường triển khai thực tế (GitHub Pages):
+Để liên kết Magic Link không quay về `localhost` hoặc các URL test, ứng dụng gửi callback cố định về GitHub Pages:
 1. Đăng nhập vào trang quản trị [Supabase Dashboard](https://supabase.com/dashboard).
 2. Chọn dự án KTX (`fbwvypwbrpgpgcgryjbs`).
 3. Vào **Authentication → URL Configuration**:
-   - **Site URL**: Nhập URL production chính thức của bạn (ví dụ: `https://petertuananh.github.io/TrKien-KTX/` hoặc `http://localhost:8080/` khi phát triển local).
+   - **Site URL**: `https://tr-ki.github.io/KTX/`
    - **Redirect URLs (Allow list)**: Bấm **Add URL** và thêm các URL hợp lệ sau:
-     - `http://localhost:8080/**`
-     - `http://localhost:8080/`
-     - `http://localhost:8080/tuff.html`
-     - `https://petertuananh.github.io/TrKien-KTX/**`
      - `https://tr-ki.github.io/KTX/**`
+     - `https://tr-ki.github.io/KTX/`
 4. Bấm **Save changes**.
 
 ### Biến môi trường cho GitHub Actions

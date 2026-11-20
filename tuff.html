@@ -2420,10 +2420,7 @@
 
     const SUPABASE_URL = 'https://fbwvypwbrpgpgcgryjbs.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_UUaPSefP6uWuvevBz_xcGw_HcOVN9rS';
-    const AUTH_REDIRECT_URL = (() => {
-      // Tự động nhận diện URL hiện tại để chuyển hướng chính xác cả khi test local lẫn trên production
-      return window.location.href.split('#')[0];
-    })();
+    const AUTH_REDIRECT_URL = 'https://tr-ki.github.io/KTX/';
     const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     const MENU_BUCKET = 'ktx-menu-photos';
     const MAX_MENU_PHOTOS = 5;
@@ -2554,6 +2551,18 @@
         for (const r of local) {
           if (!r || !BUILDINGS_DATA.some((b) => b.id === r.buildingId)) continue;
           validCount += 1;
+          const { data: existing } = await supabase
+            .from('shops')
+            .select('id,shop_name,food_name')
+            .eq('owner_id', currentUser.id)
+            .eq('building_id', r.buildingId);
+          const duplicate = (existing || []).some((shop) =>
+            normalizeVietnamese(shop.shop_name) === normalizeVietnamese(r.shopName)
+            && normalizeVietnamese(shop.food_name) === normalizeVietnamese(r.foodName));
+          if (duplicate) {
+            migratedCount += 1;
+            continue;
+          }
           const { error } = await supabase.from('shops').insert({
             owner_id: currentUser.id,
             food_name: r.foodName,

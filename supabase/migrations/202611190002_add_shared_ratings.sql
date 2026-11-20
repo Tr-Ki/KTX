@@ -11,6 +11,11 @@ create index if not exists ratings_updated_at_idx on public.ratings(updated_at d
 
 alter table public.ratings enable row level security;
 
+drop policy if exists "ratings are publicly readable" on public.ratings;
+drop policy if exists "authenticated users can create their own ratings" on public.ratings;
+drop policy if exists "users can update their own ratings" on public.ratings;
+drop policy if exists "users can delete their own ratings" on public.ratings;
+
 create policy "ratings are publicly readable"
   on public.ratings for select
   using (true);
