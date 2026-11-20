@@ -3075,7 +3075,18 @@
       const brickMat = new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.82 });
       const stripeMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.7 });
       const lawnMat = new THREE.MeshStandardMaterial({ color: '#4d8a42', roughness: 0.95 });
-      const sandFieldMat = new THREE.MeshStandardMaterial({ color: '#9c7e62', roughness: 0.96 });
+      const fieldStripeMats = [
+        new THREE.MeshStandardMaterial({ color: '#3e8d43', roughness: 0.95 }),
+        new THREE.MeshStandardMaterial({ color: '#347c3c', roughness: 0.95 })
+      ];
+      const pondBorderMat = new THREE.MeshStandardMaterial({ color: '#cbb98b', roughness: 0.9 });
+      const pondWaterMat = new THREE.MeshStandardMaterial({
+        color: '#38bdf8',
+        roughness: 0.2,
+        metalness: 0.08,
+        transparent: true,
+        opacity: 0.9
+      });
       const courtMat = new THREE.MeshStandardMaterial({ color: '#c2593f', roughness: 0.88 });
 
       const addBox = (w, h, d, x, y, z, mat) => {
@@ -3109,10 +3120,84 @@
       addBox(28, 0.24, 4.5, 102, 0.12, -8.5, sidewalkMat);
       addBox(28, 0.24, 4.5, 102, 0.12, 8.5, sidewalkMat);
 
-      // --- 5) Khu vực trung tâm: Bùng binh (trái) + Công viên tròn (giữa) + Sân đất/cỏ (phải) ---
-      // Sân trống bên phải gần cổng (giữa B và BA)
+      // --- 5) Khu vực trung tâm: hồ bán nguyệt + công viên tròn + sân bóng ---
+      // Sân bóng đá mini bên phải, giữ nguyên vùng cỏ và kích thước bãi sân cũ.
       addBox(56, 0.18, 16.5, 55, 0.09, 0, lawnMat);
-      addBox(44, 0.2, 12.5, 55, 0.1, 0, sandFieldMat);
+      addBox(44, 0.12, 12.5, 55, 0.24, 0, fieldStripeMats[0]);
+      for (let i = 0; i < 8; i++) {
+        addBox(44, 0.012, 12.5 / 8, 55, 0.306, -6.25 + (i + 0.5) * (12.5 / 8), fieldStripeMats[i % 2]);
+      }
+
+      const fieldLineY = 0.322;
+      const fieldLeft = 33;
+      const fieldRight = 77;
+      const fieldTop = -6.25;
+      const fieldBottom = 6.25;
+      addBox(44, 0.02, 0.12, 55, fieldLineY, fieldTop, stripeMat);
+      addBox(44, 0.02, 0.12, 55, fieldLineY, fieldBottom, stripeMat);
+      addBox(0.12, 0.02, 12.5, fieldLeft, fieldLineY, 0, stripeMat);
+      addBox(0.12, 0.02, 12.5, fieldRight, fieldLineY, 0, stripeMat);
+      addBox(0.1, 0.02, 12.1, 55, fieldLineY, 0, stripeMat);
+
+      const centerCircle = new THREE.Mesh(new THREE.RingGeometry(1.85, 1.95, 40), stripeMat);
+      centerCircle.rotation.x = -Math.PI / 2;
+      centerCircle.position.set(55, fieldLineY + 0.012, 0);
+      group.add(centerCircle);
+      addBox(0.18, 0.02, 0.18, 55, fieldLineY + 0.015, 0, stripeMat);
+
+      const addPenaltyArea = (endX, inwardSign) => {
+        const depth = 5.2;
+        const halfWidth = 3.65;
+        const innerX = endX + inwardSign * depth;
+        addBox(depth, 0.02, 0.1, endX + inwardSign * depth / 2, fieldLineY, -halfWidth, stripeMat);
+        addBox(depth, 0.02, 0.1, endX + inwardSign * depth / 2, fieldLineY, halfWidth, stripeMat);
+        addBox(0.1, 0.02, halfWidth * 2, innerX, fieldLineY, 0, stripeMat);
+      };
+      addPenaltyArea(fieldLeft, 1);
+      addPenaltyArea(fieldRight, -1);
+
+      const goalMat = new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.6, metalness: 0.05 });
+      const goalPostGeo = new THREE.CylinderGeometry(0.065, 0.065, 1.65, 8);
+      const goalBarGeo = new THREE.CylinderGeometry(0.055, 0.055, 2.9, 8);
+      const goalDepthGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.85, 8);
+      const addGoal = (x, outward) => {
+        [-1.4, 1.4].forEach((z) => {
+          const post = new THREE.Mesh(goalPostGeo, goalMat);
+          post.position.set(x, 1.12, z);
+          post.castShadow = true;
+          group.add(post);
+        });
+        const crossbar = new THREE.Mesh(goalBarGeo, goalMat);
+        crossbar.rotation.x = Math.PI / 2;
+        crossbar.position.set(x, 1.94, 0);
+        crossbar.castShadow = true;
+        group.add(crossbar);
+        [-1.4, 1.4].forEach((z) => {
+          const side = new THREE.Mesh(goalDepthGeo, goalMat);
+          side.rotation.z = Math.PI / 2;
+          side.position.set(x + outward * 0.42, 0.3, z);
+          group.add(side);
+        });
+        const backBar = new THREE.Mesh(goalBarGeo, goalMat);
+        backBar.rotation.x = Math.PI / 2;
+        backBar.position.set(x + outward * 0.85, 0.3, 0);
+        group.add(backBar);
+      };
+      addGoal(fieldLeft, -1);
+      addGoal(fieldRight, 1);
+
+      const flagPoleGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.78, 6);
+      const flagMat = new THREE.MeshStandardMaterial({ color: '#ef4444', roughness: 0.8 });
+      [[fieldLeft, fieldTop], [fieldLeft, fieldBottom], [fieldRight, fieldTop], [fieldRight, fieldBottom]]
+        .forEach(([x, z]) => {
+          const pole = new THREE.Mesh(flagPoleGeo, stripeMat);
+          pole.position.set(x, 0.69, z);
+          group.add(pole);
+          const flag = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.2, 0.035), flagMat);
+          flag.position.set(x + (x === fieldLeft ? 0.13 : -0.13), 0.93, z);
+          flag.castShadow = true;
+          group.add(flag);
+        });
 
       // Công viên trung tâm (giữa D và C) có vòng tròn & lối đi chữ thập như ảnh
       addBox(64, 0.18, 17, -14, 0.09, 0, lawnMat);
@@ -3134,13 +3219,37 @@
       roundaboutRoad.receiveShadow = true;
       group.add(roundaboutRoad);
 
-      const roundaboutBorder = new THREE.Mesh(new THREE.CylinderGeometry(7.4, 7.4, 0.24, 32), sidewalkMat);
-      roundaboutBorder.position.set(-64, 0.12, 0);
-      group.add(roundaboutBorder);
+      const makeSemicircle = (radius, bulgeRight = false) => {
+        const shape = new THREE.Shape();
+        if (bulgeRight) {
+          shape.moveTo(0, radius);
+          shape.lineTo(0, -radius);
+          shape.absarc(0, 0, radius, -Math.PI / 2, Math.PI / 2, false);
+        } else {
+          shape.moveTo(0, -radius);
+          shape.lineTo(0, radius);
+          shape.absarc(0, 0, radius, Math.PI / 2, Math.PI * 1.5, false);
+        }
+        shape.closePath();
+        return new THREE.ShapeGeometry(shape, 40);
+      };
+      const roundaboutPlaza = new THREE.Mesh(makeSemicircle(6.85, true), sidewalkMat);
+      roundaboutPlaza.rotation.x = -Math.PI / 2;
+      roundaboutPlaza.position.set(-64, 0.16, 0);
+      roundaboutPlaza.receiveShadow = true;
+      group.add(roundaboutPlaza);
 
-      const roundaboutGrass = new THREE.Mesh(new THREE.CylinderGeometry(6.7, 6.7, 0.28, 32), lawnMat);
-      roundaboutGrass.position.set(-64, 0.14, 0);
-      group.add(roundaboutGrass);
+      const pondBank = new THREE.Mesh(makeSemicircle(6.85), pondBorderMat);
+      pondBank.rotation.x = -Math.PI / 2;
+      pondBank.position.set(-64, 0.17, 0);
+      pondBank.receiveShadow = true;
+      group.add(pondBank);
+
+      const pondWater = new THREE.Mesh(makeSemicircle(6.25), pondWaterMat);
+      pondWater.rotation.x = -Math.PI / 2;
+      pondWater.position.set(-64, 0.19, 0);
+      pondWater.receiveShadow = true;
+      group.add(pondWater);
 
       // Đường nối từ bùng binh tới trước mặt E02-E03
       addBox(24, 0.15, 11, -83, 0.075, 0, asphaltMat);
@@ -3517,8 +3626,6 @@
       for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
         addTree(-64 + Math.cos(a) * 16, Math.sin(a) * 16, 1.0);
       }
-      addTree(-64, 0, 1.25);
-
       // Cây quanh đường biên & sân giữa các cụm nhà
       [-64, -40, -18, 8, 30, 62, 102].forEach((x) => {
         addTree(x, -64.5, 1.0);
@@ -3744,7 +3851,6 @@
       const spots = [];
       for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
         spots.push([-14 + Math.cos(a) * 4.5, Math.sin(a) * 4.5]);
-        spots.push([-64 + Math.cos(a) * 5.2, Math.sin(a) * 5.2]);
       }
       for (let x = -40; x <= 12; x += 8) {
         spots.push([x, -7.2], [x, 7.2]);
@@ -3773,6 +3879,28 @@
       inst.instanceColor.needsUpdate = true;
       scene.add(inst);
       highDetailObjects.push(inst);
+
+      const shrubAngles = [Math.PI * 0.62, Math.PI * 0.72, Math.PI, Math.PI * 1.28, Math.PI * 1.38];
+      const shrubs = new THREE.InstancedMesh(
+        new THREE.DodecahedronGeometry(0.55, 0),
+        new THREE.MeshStandardMaterial({ color: '#4d8a42', roughness: 0.95 }),
+        shrubAngles.length
+      );
+      shrubAngles.forEach((angle, index) => {
+        dummy.position.set(-64 + Math.cos(angle) * 6.55, 0.43, Math.sin(angle) * 6.55);
+        dummy.rotation.set(0, angle, 0);
+        dummy.scale.set(1.3, 0.85, 1.15);
+        dummy.updateMatrix();
+        shrubs.setMatrixAt(index, dummy.matrix);
+        shrubs.setColorAt(index, [new THREE.Color('#3f7d3b'), new THREE.Color('#5b9345'), new THREE.Color('#477f3e')][index % 3]);
+      });
+      shrubs.instanceMatrix.needsUpdate = true;
+      shrubs.instanceColor.needsUpdate = true;
+      shrubs.castShadow = true;
+      shrubs.receiveShadow = true;
+      shrubs.frustumCulled = false;
+      scene.add(shrubs);
+      highDetailObjects.push(shrubs);
     }
 
     /* =========================================================================
